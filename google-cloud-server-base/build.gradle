@@ -1,0 +1,22 @@
+plugins {
+    id 'com.github.rodm.teamcity-server' version "0.11"
+}
+
+dependencies {
+    compile project(':google-cloud-common')
+
+    provided "org.jetbrains.teamcity:cloud-interface:$teamcityVersion"
+    provided "org.jetbrains.teamcity:cloud-shared:$teamcityVersion"
+    provided 'com.google.code.gson:gson:2.5'
+    testCompile 'org.testng:testng:6.8'
+}
+
+teamcity {
+    version = teamcityVersion
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = 1.8
+    }
+}

@@ -1,0 +1,51 @@
+{
+  "attributes": {
+    "teamcityProfile": "google",
+    "teamcityServer": "xxx",
+    "teamcityData": "data",
+    "teamcitySource": "agent"
+  },
+  "cpuPlatform": "Intel Broadwell",
+  "description": "",
+  "disks": [{
+    "deviceName": "persistent-disk-0",
+    "index": 0,
+    "mode": "READ_WRITE",
+    "type": "PERSISTENT"
+  }
+  ],
+  "hostname": "agent1.internal",
+  "id": 123,
+  "image": "",
+  "licenses": [{
+    "id": "123"
+  }
+  ],
+  "machineType": "projects/123/machineTypes/n1-standard-1",
+  "maintenanceEvent": "NONE",
+  "name": "agent1",
+  "networkInterfaces": [{
+    "accessConfigs": [{
+      "externalIp": "1.1.1.1",
+      "type": "ONE_TO_ONE_NAT"
+    }
+    ],
+    "forwardedIps": [],
+    "ip": "192.0.0.1",
+    "ipAliases": [],
+    "mac": "42:01:0a:8a:00:02",
+    "network": "projects/123/networks/default"
+  }
+  ],
+  "scheduling": {
+    "automaticRestart": "TRUE",
+    "onHostMaintenance": "MIGRATE",
+    "preemptible": "FALSE"
+  },
+  "serviceAccounts": {},
+  "tags": [],
+  "virtualClock": {
+    "driftToken": "0"
+  },
+  "zone": "projects/123/zones/us-west1-a"
+}

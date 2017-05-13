@@ -1,0 +1,6 @@
+rootProject.name = 'teamcity-google-agent'
+
+include 'google-cloud-agent'
+include 'google-cloud-common'
+include 'google-cloud-server-base'
+include 'google-cloud-server'

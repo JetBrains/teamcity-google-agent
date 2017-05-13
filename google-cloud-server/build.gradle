@@ -1,0 +1,40 @@
+plugins {
+    id 'com.github.rodm.teamcity-server' version "0.11"
+}
+
+repositories {
+    maven { url "https://dl.bintray.com/kotlin/kotlin-eap-1.1/" }
+}
+
+teamcity {
+    version = teamcityVersion
+
+    server {
+        descriptor = project.file('teamcity-plugin.xml')
+        tokens = [Version: project.version]
+    }
+}
+
+kotlin { experimental { coroutines 'enable' } }
+
+dependencies {
+    agent project(path: ':google-cloud-agent', configuration: 'plugin')
+    server project(':google-cloud-common')
+    server project(':google-cloud-server-base')
+    provided project(':google-cloud-server-base')
+
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
+    compile "com.google.cloud:google-cloud-compute:0.17.2-alpha"
+    provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
+    testCompile 'org.testng:testng:6.8'
+}
+
+serverPlugin.version = null
+serverPlugin.baseName = 'cloud-google'
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = 1.8
+    }
+}
