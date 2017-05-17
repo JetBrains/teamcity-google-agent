@@ -1,4 +1,4 @@
-# TeamCity Google Compute Engine plugin
+# TeamCity Google Cloud Agents
 [![plugin status]( 
 http://teamcity.jetbrains.com/app/rest/builds/buildType:TeamCityGoogleCloudAgent_Build,pinned:true/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=TeamCityGoogleCloudAgent_Build&guest=1)
 
