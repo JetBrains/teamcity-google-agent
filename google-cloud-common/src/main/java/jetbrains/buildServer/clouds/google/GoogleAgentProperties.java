@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package jetbrains.buildServer.clouds.google
+package jetbrains.buildServer.clouds.google;
 
-object GoogleAgentProperties {
-    val INSTANCE_NAME = "google.instance.name"
+public class GoogleAgentProperties {
+    public static String INSTANCE_NAME = "google.instance.name";
 }
