@@ -77,24 +77,25 @@ class GoogleMetadataReader(events: EventDispatcher<AgentLifeCycleListener>,
             return
         }
 
-        LOG.info("Google Compute integration is available, applying parameters")
+        LOG.info("Google Compute integration is available, will register agent \"${metadata.name}\" on server URL \"${data.serverAddress}\"")
         configuration.name = metadata.name
         configuration.serverUrl = data.serverAddress
+
+        metadata.networkInterfaces.firstOrNull()?.let {
+            it.accessConfigs.firstOrNull()?.let {
+                LOG.info("Setting external IP address: ${it.externalIp}")
+                configuration.addAlternativeAgentAddress(it.externalIp)
+            }
+        }
 
         configuration.addConfigurationParameter(GoogleAgentProperties.INSTANCE_NAME, metadata.name)
         data.customAgentConfigurationParameters.entries.forEach { it ->
             configuration.addConfigurationParameter(it.key, it.value)
-            LOG.info(String.format("Added config parameter: {%s, %s}", it.key, it.value))
+            LOG.info("Added config parameter: ${it.key} => ${it.value}")
         }
 
         data.idleTimeout?.let {
             idleShutdown.setIdleTime(it)
-        }
-
-        metadata.networkInterfaces.firstOrNull()?.let {
-            it.accessConfigs.firstOrNull()?.let {
-                configuration.addAlternativeAgentAddress(it.externalIp)
-            }
         }
     }
 
