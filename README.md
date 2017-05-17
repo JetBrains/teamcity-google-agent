@@ -1,6 +1,6 @@
 # TeamCity Google Compute Engine plugin
 [![plugin status]( 
-http://teamcity.jetbrains.com/app/rest/builds/buildType:TeamCityGoogleCloudAgent_Build,pinned:true/statusIcon.svg)](https://teamcity.jetbrains.com/viewLog.html?buildTypeId=TeamCityGoogleCloudAgent_Build&buildId=lastPinned&guest=1)
+http://teamcity.jetbrains.com/app/rest/builds/buildType:TeamCityGoogleCloudAgent_Build,pinned:true/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=TeamCityGoogleCloudAgent_Build&guest=1)
 
 TeamCity integration with Google Compute Engine which allows to use cloud instances to scale the pool of build agents.
 
