@@ -4,6 +4,10 @@ http://teamcity.jetbrains.com/app/rest/builds/buildType:TeamCityGoogleCloudAgent
 
 TeamCity integration with Google Compute Engine which allows to use cloud instances to scale the pool of build agents.
 
+## Compatibility
+
+The plugin is compatible with TeamCity 10.0.x and greater.
+
 ## Installation
 
 You can [download the plugin](https://teamcity.jetbrains.com/app/rest/builds/buildType:TeamCityGoogleCloudAgent_Build,branch:default:any,tag:release/artifacts/content/cloud-google.zip?guest=1) and install it as an [additional TeamCity plugin](https://confluence.jetbrains.com/display/TCDL/Installing+Additional+Plugins).
