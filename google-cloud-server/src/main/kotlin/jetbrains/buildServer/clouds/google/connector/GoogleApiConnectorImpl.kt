@@ -14,6 +14,7 @@ import jetbrains.buildServer.clouds.google.GoogleCloudInstance
 import jetbrains.buildServer.clouds.google.GoogleConstants
 import jetbrains.buildServer.clouds.google.utils.AlphaNumericStringComparator
 import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.CoroutineStart
 import kotlinx.coroutines.experimental.async
 
 
@@ -47,7 +48,7 @@ class GoogleApiConnectorImpl(accessKey: String) : GoogleApiConnector {
         compute.listZones()
     }
 
-    override fun createVmAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = async(CommonPool, false) {
+    override fun createVmAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = async(CommonPool, CoroutineStart.LAZY) {
         val details = instance.image.imageDetails
         val zone = details.zone
         val machineType = details.machineType
@@ -87,19 +88,19 @@ class GoogleApiConnectorImpl(accessKey: String) : GoogleApiConnector {
         }
     }
 
-    override fun startVmAsync(instance: GoogleCloudInstance) = async(CommonPool, false) {
+    override fun startVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
         getInstance(instance).start()
     }
 
-    override fun restartVmAsync(instance: GoogleCloudInstance) = async(CommonPool, false) {
+    override fun restartVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
         getInstance(instance).reset()
     }
 
-    override fun stopVmAsync(instance: GoogleCloudInstance) = async(CommonPool, false) {
+    override fun stopVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
         getInstance(instance).stop()
     }
 
-    override fun deleteVmAsync(instance: GoogleCloudInstance) = async(CommonPool, false) {
+    override fun deleteVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
         getInstance(instance).delete()
     }
 
@@ -117,25 +118,25 @@ class GoogleApiConnectorImpl(accessKey: String) : GoogleApiConnector {
         return emptyArray()
     }
 
-    override fun getImagesAsync() = async(CommonPool, false) {
+    override fun getImagesAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listImages().iterateAll()
                 .sortedWith(compareBy(comparator, { t -> t.description }))
                 .associate { it -> it.imageId.image to it.description }
     }
 
-    override fun getZonesAsync() = async(CommonPool, false) {
+    override fun getZonesAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listZones().iterateAll()
                 .sortedWith(compareBy(comparator, { t -> t.description }))
                 .associate { it -> it.zoneId.zone to it.description }
     }
 
-    override fun getMachineTypesAsync() = async(CommonPool, false) {
+    override fun getMachineTypesAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listMachineTypes().iterateAll()
                 .sortedWith(compareBy(comparator, { t -> t.description }))
                 .associate { it -> it.machineTypeId.type to it.description }
     }
 
-    override fun getNetworksAsync() = async(CommonPool, false) {
+    override fun getNetworksAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listNetworks().iterateAll()
                 .sortedWith(compareBy(comparator, { t -> t.description }))
                 .associate { it -> it.networkId.network to it.description }
