@@ -67,6 +67,15 @@
                 </td>
             </tr>
             <tr>
+                <th><label for="${cons.vmNamePrefix}">Name Prefix: <l:star/></label></th>
+                <td>
+                    <input type="text" name="${cons.vmNamePrefix}" class="longField"
+                           data-bind="textInput: image().vmNamePrefix"/>
+                    <span class="smallNote">Unique name prefix to create resource groups</span>
+                    <span class="error option-error" data-bind="validationMessage: image().vmNamePrefix"></span>
+                </td>
+            </tr>
+            <tr>
                 <th><label for="${cons.maxInstancesCount}">Instances Limit: <l:star/></label></th>
                 <td>
                     <div>
@@ -78,12 +87,12 @@
                 </td>
             </tr>
             <tr>
-                <th><label for="${cons.vmNamePrefix}">Name Prefix: <l:star/></label></th>
+                <th class="noBorder"></th>
                 <td>
-                    <input type="text" name="${cons.vmNamePrefix}" class="longField"
-                           data-bind="textInput: image().vmNamePrefix"/>
-                    <span class="smallNote">Unique name prefix to create resource groups</span>
-                    <span class="error option-error" data-bind="validationMessage: image().vmNamePrefix"></span>
+                    <input type="checkbox" name="${cons.preemptible}" data-bind="checked: image().preemptible"/>
+                    <label for="${cons.preemptible}">Use preemptible VM Instances
+                        <bs:help urlPrefix="https://cloud.google.com/preemptible-vms/" file=""/>
+                    </label>
                 </td>
             </tr>
             <tr>
@@ -146,12 +155,12 @@
                     <td class="nowrap">
                         <span data-bind="text: sourceImage.slice(-80), attr: {title: sourceImage}"></span>
                     </td>
-                    <td class="center" data-bind="text: maxInstances"></td>
+                    <td class="center edit" data-bind="text: maxInstances"></td>
                     <td class="edit">
                         <a href="#" data-bind="click: $parent.showDialog,
                         css: {hidden: !$parent.isValidCredentials() || $parent.loadingResources()}">Edit</a>
                     </td>
-                    <td class="remove"><a href="#" data-bind="click: $parent.deleteImage">Delete</a></td>
+                    <td class="remove edit"><a href="#" data-bind="click: $parent.deleteImage">Delete</a></td>
                 </tr>
                 </tbody>
             </table>

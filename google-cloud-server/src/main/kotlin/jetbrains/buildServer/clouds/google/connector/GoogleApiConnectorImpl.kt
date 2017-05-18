@@ -73,6 +73,11 @@ class GoogleApiConnectorImpl(accessKey: String) : GoogleApiConnector {
                         GoogleConstants.TAG_PROFILE to myProfileId,
                         GoogleConstants.TAG_SOURCE to details.sourceId
                 )))
+                .apply {
+                    if (details.preemptible) {
+                        setSchedulingOptions(SchedulingOptions.preemptible())
+                    }
+                }
                 .build()
 
         var operation = compute.create(instanceInfo)

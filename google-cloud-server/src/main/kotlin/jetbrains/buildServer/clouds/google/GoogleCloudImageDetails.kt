@@ -40,7 +40,9 @@ class GoogleCloudImageDetails(
         @SerializedName(CloudImageParameters.AGENT_POOL_ID_FIELD)
         val agentPoolId: Int?,
         @SerializedName(GoogleConstants.PROFILE_ID)
-        val profileId: String?) : CloudImageDetails {
+        val profileId: String?,
+        @SerializedName(GoogleConstants.PREEMPTIBLE)
+        val preemptible: Boolean = false) : CloudImageDetails {
 
     override fun getSourceId(): String {
         return sourceId

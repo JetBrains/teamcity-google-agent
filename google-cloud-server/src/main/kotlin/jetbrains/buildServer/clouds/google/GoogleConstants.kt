@@ -51,6 +51,9 @@ class GoogleConstants {
     val agentPoolId: String
         get() = CloudImageParameters.AGENT_POOL_ID_FIELD
 
+    val preemptible: String
+        get() = PREEMPTIBLE
+
     companion object {
         const val ACCESS_KEY = Constants.SECURE_PROPERTY_PREFIX + "accessKey"
         const val SOURCE_IMAGE = "sourceImage"
@@ -63,5 +66,6 @@ class GoogleConstants {
         const val TAG_PROFILE = "teamcityProfile"
         const val TAG_SOURCE = "teamcitySource"
         const val PROFILE_ID = "profileId"
+        const val PREEMPTIBLE = "preemptible"
     }
 }

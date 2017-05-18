@@ -29,12 +29,13 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
     });
 
     // Image details
-    var maxLength = 12;
+    var maxLength = 60;
     self.image = ko.validatedObservable({
         sourceImage: ko.observable().extend({required: true}),
         zone: ko.observable().extend({required: true}),
         network: ko.observable().extend({required: true}),
         maxInstances: ko.observable(1).extend({required: true, min: 1}),
+        preemptible: ko.observable(false),
         machineType: ko.observable().extend({required: true}),
         vmNamePrefix: ko.observable('').trimmed().extend({required: true, maxLength: maxLength}).extend({
             validation: {
@@ -87,6 +88,9 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
 
     self.images_data.subscribe(function (data) {
         var images = ko.utils.parseJson(data || "[]");
+        images.forEach(function (image) {
+            image.preemptible = getBoolean(image.preemptible);
+        });
         self.images(images);
     });
 
@@ -97,13 +101,14 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
         self.originalImage = data;
 
         var model = self.image();
-        var image = data || {maxInstances: 1};
+        var image = data || {maxInstances: 1, preemptible: false};
 
         model.sourceImage(image.sourceImage);
         model.zone(image.zone);
         model.network(image.network);
         model.machineType(image.machineType);
         model.maxInstances(image.maxInstances);
+        model.preemptible(image.preemptible);
         model.vmNamePrefix(image['source-id']);
         model.agentPoolId(image.agent_pool_id);
         model.profileId(image.profileId);
@@ -126,6 +131,7 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
             zone: model.zone(),
             network: model.network(),
             maxInstances: model.maxInstances(),
+            preemptible: model.preemptible(),
             'source-id': model.vmNamePrefix(),
             machineType: model.machineType(),
             agent_pool_id: model.agentPoolId(),
@@ -138,7 +144,7 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
         } else {
             self.images.push(image);
         }
-        self.images_data(JSON.stringify(self.images()));
+        saveImages();
 
         dialog.close();
         return false;
@@ -233,6 +239,14 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
         return $response.find("images:eq(0) image").map(function () {
             return {id: $(this).attr("id"), text: $(this).text()};
         }).get();
+    }
+
+    function getBoolean(variable) {
+        if (typeof variable === 'string' || variable instanceof String) {
+            return ko.utils.parseJson(variable);
+        }
+
+        return variable
     }
 
     (function loadAgentPools() {
