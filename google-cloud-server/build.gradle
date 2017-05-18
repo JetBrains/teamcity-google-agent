@@ -25,7 +25,7 @@ dependencies {
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
-    compile "com.google.cloud:google-cloud-compute:0.17.2-alpha"
+    compile "com.google.cloud:google-cloud-compute:0.18.0-alpha"
     provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
     testCompile 'org.testng:testng:6.8'
 }
