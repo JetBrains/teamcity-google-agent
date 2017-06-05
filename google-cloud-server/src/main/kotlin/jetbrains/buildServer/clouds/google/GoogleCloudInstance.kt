@@ -22,7 +22,7 @@ import jetbrains.buildServer.serverSide.AgentDescription
 /**
  * Cloud instance.
  */
-class GoogleCloudInstance internal constructor(image: GoogleCloudImage, val id: String)
+class GoogleCloudInstance internal constructor(image: GoogleCloudImage, val id: String, val zone: String)
     : AbstractCloudInstance<GoogleCloudImage>(image, id, id) {
 
     var properties: MutableMap<String, String> = HashMap()

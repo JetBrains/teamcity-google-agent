@@ -20,6 +20,7 @@ import com.google.cloud.compute.Instance
 import com.google.cloud.compute.InstanceInfo
 import jetbrains.buildServer.clouds.InstanceStatus
 import jetbrains.buildServer.clouds.base.connector.AbstractInstance
+import jetbrains.buildServer.clouds.google.GoogleConstants
 
 import java.util.Date
 
@@ -27,6 +28,14 @@ import java.util.Date
  * Google cloud instance.
  */
 class GoogleInstance internal constructor(private val instance: Instance) : AbstractInstance() {
+
+    private val properties: Map<String, String>
+
+    init {
+        properties = instance.metadata.values.toMutableMap()
+        properties[GoogleConstants.ZONE] = instance.instanceId.zone
+    }
+
     override fun getName(): String {
         return instance.instanceId.instance
     }
@@ -54,10 +63,10 @@ class GoogleInstance internal constructor(private val instance: Instance) : Abst
     }
 
     override fun getProperty(name: String): String? {
-        return instance.metadata.values[name]
+        return properties[name]
     }
 
-    override fun getProperties(): MutableMap<String, String> = instance.metadata.values
+    override fun getProperties() = properties
 
     companion object {
         private var STATES = HashMap<InstanceInfo.Status, InstanceStatus>()

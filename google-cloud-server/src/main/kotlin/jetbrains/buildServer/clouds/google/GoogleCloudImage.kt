@@ -40,7 +40,8 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
     }
 
     override fun createInstanceFromReal(realInstance: AbstractInstance): GoogleCloudInstance {
-        return GoogleCloudInstance(this, realInstance.name).apply {
+        val zone = realInstance.properties[GoogleConstants.ZONE]!!
+        return GoogleCloudInstance(this, realInstance.name, zone).apply {
             properties = realInstance.properties
         }
     }
@@ -66,7 +67,7 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
      */
     private fun createInstance(userData: CloudInstanceUserData): GoogleCloudInstance {
         val name = getInstanceName()
-        val instance = GoogleCloudInstance(this, name)
+        val instance = GoogleCloudInstance(this, name, imageDetails.zone)
         instance.status = InstanceStatus.SCHEDULED_TO_START
         val data = GoogleUtils.setVmNameForTag(userData, name)
 

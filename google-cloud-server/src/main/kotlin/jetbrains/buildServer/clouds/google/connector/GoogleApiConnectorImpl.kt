@@ -105,8 +105,7 @@ class GoogleApiConnectorImpl(accessKey: String) : GoogleApiConnector {
     }
 
     private fun getInstance(instance: GoogleCloudInstance): Instance {
-        val zone = instance.image.imageDetails.zone
-        val instanceId = InstanceId.of(zone, instance.id)
+        val instanceId = InstanceId.of(instance.zone, instance.id)
         return compute.getInstance(instanceId)
     }
 
