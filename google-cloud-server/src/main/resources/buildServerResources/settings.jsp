@@ -10,7 +10,7 @@
 <jsp:useBean id="cons" class="jetbrains.buildServer.clouds.google.GoogleConstants"/>
 <jsp:useBean id="basePath" class="java.lang.String" scope="request"/>
 
-<h2 class="noBorder section-header">Cloud Access Information</h2>
+<h2 class="noBorder section-header">Cloud credentials</h2>
 
 <script type="text/javascript">
     BS.LoadStyleSheetDynamically("<c:url value='${resPath}settings.css'/>");
@@ -28,7 +28,8 @@
                     <bs:help urlPrefix="https://cloud.google.com/storage/docs/authentication#generating-a-private-key"
                              file=""/><br/>
                     You need to assign <em>Compute Engine Instance Admin</em> role
-                            <bs:help urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_short_product_name_roles"
+                            <bs:help
+                                    urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_short_product_name_roles"
                                     file=""/>
                 </span>
                 <span class="error option-error" data-bind="validationMessage: accessKey"></span>
@@ -67,16 +68,16 @@
                 </td>
             </tr>
             <tr>
-                <th><label for="${cons.vmNamePrefix}">Name Prefix: <l:star/></label></th>
+                <th><label for="${cons.vmNamePrefix}">Agent name prefix: <l:star/></label></th>
                 <td>
                     <input type="text" name="${cons.vmNamePrefix}" class="longField"
                            data-bind="textInput: image().vmNamePrefix"/>
-                    <span class="smallNote">Unique name prefix to create resource groups</span>
+                    <span class="smallNote">It must be unique per cloud profile</span>
                     <span class="error option-error" data-bind="validationMessage: image().vmNamePrefix"></span>
                 </td>
             </tr>
             <tr>
-                <th><label for="${cons.maxInstancesCount}">Instances Limit: <l:star/></label></th>
+                <th><label for="${cons.maxInstancesCount}">Instances limit: <l:star/></label></th>
                 <td>
                     <div>
                         <input type="text" name="${cons.maxInstancesCount}" class="longField"
@@ -87,21 +88,21 @@
                 </td>
             </tr>
             <tr>
+                <th><label for="${cons.machineType}">Machine type: <l:star/></label></th>
+                <td>
+                    <select name="${cons.machineType}" class="longField"
+                            data-bind="options: machineTypes, optionsText: 'text', optionsValue: 'id',
+                             value: image().machineType"></select>
+                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
+                </td>
+            </tr>
+            <tr>
                 <th class="noBorder"></th>
                 <td>
                     <input type="checkbox" name="${cons.preemptible}" data-bind="checked: image().preemptible"/>
                     <label for="${cons.preemptible}">Use preemptible VM Instances
                         <bs:help urlPrefix="https://cloud.google.com/preemptible-vms/" file=""/>
                     </label>
-                </td>
-            </tr>
-            <tr>
-                <th><label for="${cons.machineType}">Machine Type: <l:star/></label></th>
-                <td>
-                    <select name="${cons.machineType}" class="longField"
-                            data-bind="options: machineTypes, optionsText: 'text', optionsValue: 'id',
-                             value: image().machineType"></select>
-                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
                 </td>
             </tr>
             <tr>
@@ -117,7 +118,7 @@
                 </td>
             </tr>
             <tr class="advancedSetting">
-                <th><label for="${cons.agentPoolId}">Agent Pool:</label></th>
+                <th><label for="${cons.agentPoolId}">Agent pool:</label></th>
                 <td>
                     <select name="prop:${cons.agentPoolId}" class="longField"
                             data-bind="options: agentPools, optionsText: 'text', optionsValue: 'id',
@@ -134,7 +135,7 @@
         </div>
     </bs:dialog>
 
-    <h2 class="noBorder section-header">Agent Images</h2>
+    <h2 class="noBorder section-header">Agent images</h2>
     <div class="imagesOuterWrapper">
         <div class="imagesTableWrapper">
             <span class="emptyImagesListMessage hidden"
@@ -143,8 +144,8 @@
                    data-bind="css: { hidden: images().length == 0 }">
                 <thead>
                 <tr>
-                    <th class="name">Name Prefix</th>
-                    <th class="name">Source Image</th>
+                    <th class="name">Agent name prefix</th>
+                    <th class="name">Cloud image</th>
                     <th class="name center" title="Maximum number of instances">Limit</th>
                     <th class="name center" colspan="2">Actions</th>
                 </tr>
@@ -173,7 +174,8 @@
         </div>
 
         <a class="btn" href="#" disabled="disabled"
-           data-bind="click: showDialog.bind($data, null), attr: {disabled: !isValidCredentials() || loadingResources() ? 'disabled' : null}">
+           data-bind="click: (!isValidCredentials() || loadingResources()) ? false : showDialog.bind($data, null),
+                      attr: {disabled: !isValidCredentials() || loadingResources() ? 'disabled' : null}">
             <span class="addNew">Add image</span>
         </a>
     </div>
