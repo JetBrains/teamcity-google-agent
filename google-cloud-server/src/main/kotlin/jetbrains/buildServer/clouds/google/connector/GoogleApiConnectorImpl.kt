@@ -89,22 +89,22 @@ class GoogleApiConnectorImpl(accessKey: String) : GoogleApiConnector {
     }
 
     override fun startVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
-        getInstance(instance).start()
+        getInstance(instance)?.start()
     }
 
     override fun restartVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
-        getInstance(instance).reset()
+        getInstance(instance)?.reset()
     }
 
     override fun stopVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
-        getInstance(instance).stop()
+        getInstance(instance)?.stop()
     }
 
     override fun deleteVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
-        getInstance(instance).delete()
+        getInstance(instance)?.delete()
     }
 
-    private fun getInstance(instance: GoogleCloudInstance): Instance {
+    private fun getInstance(instance: GoogleCloudInstance): Instance? {
         val instanceId = InstanceId.of(instance.zone, instance.id)
         return compute.getInstance(instanceId)
     }
