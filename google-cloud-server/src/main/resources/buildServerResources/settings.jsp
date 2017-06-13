@@ -37,7 +37,7 @@
                                data-bind="event: { change: function() { loadAccessKey($element.files[0]) } }"/>
                     </div>
                 </div>
-                <a href="#" data-bind="click: showAccessKey, visible: !isShowAccessKey()">Edit key value</a>
+                <a href="#" data-bind="click: showAccessKey, visible: !isShowAccessKey()">Edit JSON key</a>
                 <span class="smallNote">Specify the JSON private key.
                     <bs:help urlPrefix="https://cloud.google.com/storage/docs/authentication#generating-a-private-key"
                              file=""/><br/>
