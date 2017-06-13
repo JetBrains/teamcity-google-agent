@@ -72,7 +72,7 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
     }
 
     override fun getDisplayName(): String {
-        return "Google Compute"
+        return "Google Compute Engine"
     }
 
     override fun getEditProfileUrl(): String? {
