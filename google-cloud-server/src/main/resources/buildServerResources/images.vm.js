@@ -18,6 +18,9 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
 
     self.loadingResources = ko.observable(false);
     self.errorResources = ko.observable("");
+    self.isShowAccessKey = ko.observable(true);
+    self.isDragOver = ko.observable(false);
+    self.hasFileReader = ko.observable(typeof FileReader !== "undefined");
 
     // Credentials
     self.credentials = ko.validatedObservable({
@@ -41,7 +44,7 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
             validation: {
                 validator: function (value) {
                     return self.originalImage && self.originalImage['source-id'] === value ||
-                        self.sourceImages().every(function(image) {
+                        self.sourceImages().every(function (image) {
                             return image['source-id'] !== value;
                         });
                 },
@@ -73,6 +76,8 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
     // Reload info on credentials change
     self.credentials().accessKey.subscribe(function (accessKey) {
         if (!accessKey) return;
+
+        self.isShowAccessKey(false);
 
         self.loadInfo();
     });
@@ -197,6 +202,46 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
         }).always(function () {
             self.loadingResources(false);
         });
+    };
+
+    self.showAccessKey = function () {
+        self.isShowAccessKey(true);
+    };
+
+    self.loadAccessKey = function (file) {
+        if (!self.hasFileReader()) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            self.credentials().accessKey(e.target.result);
+        };
+        reader.readAsText(file);
+    };
+
+    self.dragEnterHandler = function () {
+        self.isDragOver(true);
+    };
+
+    self.dragLeaveHandler = function () {
+        self.isDragOver(false);
+    };
+
+    self.dropHandler = function (e) {
+        self.isDragOver(false);
+        var dt = e.dataTransfer || e.originalEvent.dataTransfer;
+        if (dt.items) {
+            for (var i = 0; i < dt.items.length; i++) {
+                if (dt.items[i].kind === "file") {
+                    var file = dt.items[i].getAsFile();
+                    self.loadAccessKey(file);
+                    return
+                }
+            }
+        } else {
+            for (var i = 0; i < dt.files.length; i++) {
+                self.loadAccessKey(dt.files[i]);
+                return
+            }
+        }
     };
 
     function saveImages() {

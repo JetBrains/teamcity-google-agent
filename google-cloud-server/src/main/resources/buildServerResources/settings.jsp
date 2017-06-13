@@ -18,12 +18,26 @@
 
 <div id="google-setting" data-bind="validationOptions: {insertMessages: false}">
 
-    <table class="runnerFormTable" data-bind="with: credentials()">
+    <table class="runnerFormTable">
         <tr>
             <th><label for="${cons.accessKey}">JSON private key: <l:star/></label></th>
             <td>
-                <textarea name="prop:${cons.accessKey}" class="longField"
-                          data-bind="initializeValue: accessKey, textInput: accessKey">${propertiesBean.properties[cons.accessKey]}</textarea>
+                <div data-bind="visible: isShowAccessKey || !isValidCredentials()">
+                    <textarea name="prop:${cons.accessKey}" class="longField"
+                              data-bind="initializeValue: credentials().accessKey,
+                              textInput: credentials().accessKey, event: {
+                              dragover: function() { return false },
+                              dragenter: function() { dragEnterHandler(); },
+                              dragleave: function() { dragLeaveHandler(); },
+                              drop: function(data, event) { return dropHandler(event) } },
+                              css: { attentionComment: isDragOver }">${propertiesBean.properties[cons.accessKey]}</textarea>
+                    <div data-bind="visible: hasFileReader">
+                        <span class="smallNote">You could paste JSON file contents, select local file or drop onto text area.</span>
+                        <input type="file"
+                               data-bind="event: { change: function() { loadAccessKey($element.files[0]) } }"/>
+                    </div>
+                </div>
+                <a href="#" data-bind="click: showAccessKey, visible: !isShowAccessKey()">Edit key value</a>
                 <span class="smallNote">Specify the JSON private key.
                     <bs:help urlPrefix="https://cloud.google.com/storage/docs/authentication#generating-a-private-key"
                              file=""/><br/>
@@ -32,11 +46,11 @@
                                     urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_short_product_name_roles"
                                     file=""/>
                 </span>
-                <span class="error option-error" data-bind="validationMessage: accessKey"></span>
+                <span class="error option-error" data-bind="validationMessage: credentials().accessKey"></span>
             </td>
         </tr>
         <tr>
-            <td colspan="2" data-bind="with: $parent">
+            <td colspan="2">
                 <span data-bind="css: {hidden: !loadingResources()}"><i class="icon-refresh icon-spin"></i> Loading service data...</span>
                 <span class="error option-error"
                       data-bind="text: errorResources, css: {hidden: loadingResources}"></span>
