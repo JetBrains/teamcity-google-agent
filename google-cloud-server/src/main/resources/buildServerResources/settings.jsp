@@ -24,6 +24,7 @@
             <td>
                 <div data-bind="visible: isShowAccessKey || !isValidCredentials()">
                     <textarea name="prop:${cons.accessKey}" class="longField"
+                              rows="5" cols="49"
                               data-bind="initializeValue: credentials().accessKey,
                               textInput: credentials().accessKey, event: {
                               dragover: function() { return false },

@@ -24,8 +24,7 @@ import jetbrains.buildServer.serverSide.SBuildServer
 import jetbrains.buildServer.serverSide.agentPools.AgentPoolManager
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import jetbrains.buildServer.web.openapi.WebControllerManager
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.experimental.*
 import org.jdom.Content
 import org.jdom.Element
 import org.springframework.web.servlet.ModelAndView
@@ -89,18 +88,27 @@ class SettingsController(server: SBuildServer,
         resources.filterNotNull()
                 .forEach { resource ->
                     HANDLERS[resource]?.let {
-                        promises += resource to it.handle(request)
+                        promises += resource to async(CommonPool, CoroutineStart.LAZY) {
+                            it.handle(request).await()
+                        }
                     }
                 }
 
         val context = request.startAsync(request, response)
         promises.values.forEach{ it -> it.start() }
+
+        val errorMessages = mutableSetOf<String>()
         promises.keys.forEach { resource ->
             try {
                 xmlResponse.addContent(promises[resource]?.await())
             } catch (e: Throwable) {
                 LOG.debug(e)
-                errors.addError(resource, e.message)
+                e.message?.let {
+                    if (!errorMessages.contains(it)) {
+                        errors.addError(resource, it)
+                        errorMessages.add(it)
+                    }
+                }
             }
         }
 
