@@ -14,11 +14,11 @@ You can [download the plugin](https://plugins.jetbrains.com/plugin/9704-google-c
 
 ## Configuration
 
-The plugin supports Google Compute images to start a new instances. You also need to create a new JSON private key and assign the `Compute Engine Instance Admin` [role](https://cloud.google.com/compute/docs/access/#predefined_short_product_name_roles).
+The plugin supports Google Compute images to start new instances. You also need to create a new JSON private key and assign the `Compute Engine Instance Admin` [role](https://cloud.google.com/compute/docs/access/#predefined_short_product_name_roles).
 
 ### Image Creation
 
-Before you can start using integration, you need to create a new cloud image. To do that, that create a new cloud instance, install the [TeamCity Build Agent](https://confluence.jetbrains.com/display/TCDL/TeamCity+Integration+with+Cloud+Solutions#TeamCityIntegrationwithCloudSolutions-PreparingavirtualmachinewithaninstalledTeamCityagent) on it and set it to start automatically. You also need to manually point the agent to the existing TeamCity server with the Google Cloud plugin installed to let the build agent download the plugins.
+Before you can start using the integration, you need to create a new cloud image. To do that, create a new cloud instance, install the [TeamCity Build Agent](https://confluence.jetbrains.com/display/TCDL/TeamCity+Integration+with+Cloud+Solutions#TeamCityIntegrationwithCloudSolutions-PreparingavirtualmachinewithaninstalledTeamCityagent) on it and set it to start automatically. You also need to manually point the agent to the existing TeamCity server with the Google Cloud plugin installed to let the build agent download the plugins.
 
 Then you need to [remove temporary files](https://confluence.jetbrains.com/display/TCDL/TeamCity+Integration+with+Cloud+Solutions#TeamCityIntegrationwithCloudSolutions-Capturinganimagefromavirtualmachine) and [create a new image](https://cloud.google.com/compute/docs/images/create-delete-deprecate-private-images) from the instance disk.
 
