@@ -25,5 +25,5 @@ import javax.servlet.http.HttpServletRequest
  * Request handler.
  */
 internal interface ResourceHandler {
-    fun handle(request: HttpServletRequest): Deferred<Content>
+    fun handle(parameters: Map<String, String>): Deferred<Content>
 }

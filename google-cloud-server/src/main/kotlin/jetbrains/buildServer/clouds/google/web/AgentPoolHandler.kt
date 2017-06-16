@@ -20,13 +20,12 @@ import jetbrains.buildServer.serverSide.agentPools.AgentPoolManager
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
 import org.jdom.Element
-import javax.servlet.http.HttpServletRequest
 
 /**
  * Handles agent pools request.
  */
 internal class AgentPoolHandler(val agentPoolManager: AgentPoolManager) : ResourceHandler {
-    override fun handle(request: HttpServletRequest) = async(CommonPool) {
+    override fun handle(parameters: Map<String, String>) = async(CommonPool) {
         val agentPoolsElement = Element("agentPools")
 
         for (agentPool in agentPoolManager.allAgentPools) {

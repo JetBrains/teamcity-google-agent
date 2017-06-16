@@ -24,22 +24,20 @@ import jetbrains.buildServer.controllers.BasePropertiesBean
 import kotlinx.coroutines.experimental.Deferred
 import org.jdom.Content
 
-import javax.servlet.http.HttpServletRequest
-
 /**
  * Google resource handler.
  */
 internal abstract class GoogleResourceHandler : ResourceHandler {
-    override fun handle(request: HttpServletRequest): Deferred<Content> {
+    override fun handle(parameters: Map<String, String>): Deferred<Content> {
         val propsBean = BasePropertiesBean(null)
-        PluginPropertiesUtil.bindPropertiesFromRequest(request, propsBean, true)
+        PluginPropertiesUtil.bindPropertiesFromRequest(parameters, propsBean, true)
 
         val props = propsBean.properties
         val accessKey = props[GoogleConstants.ACCESS_KEY]!!
         val apiConnector = GoogleApiConnectorImpl(accessKey)
 
-        return handle(apiConnector, request)
+        return handle(apiConnector, parameters)
     }
 
-    protected abstract fun handle(connector: GoogleApiConnector, request: HttpServletRequest): Deferred<Content>
+    protected abstract fun handle(connector: GoogleApiConnector, parameters: Map<String, String>): Deferred<Content>
 }

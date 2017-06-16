@@ -83,13 +83,14 @@ class SettingsController(server: SBuildServer,
         val xmlResponse = XmlResponseUtil.newXmlResponse()
         val errors = ActionErrors()
         val resources = request.getParameterValues("resource")
+        val parameters = request.parameterMap.entries.associate { it.key to (it.value.firstOrNull() ?: "") }
         val promises = hashMapOf<String, Deferred<Content>>()
 
         resources.filterNotNull()
                 .forEach { resource ->
                     HANDLERS[resource]?.let {
                         promises += resource to async(CommonPool, CoroutineStart.LAZY) {
-                            it.handle(request).await()
+                            it.handle(parameters).await()
                         }
                     }
                 }

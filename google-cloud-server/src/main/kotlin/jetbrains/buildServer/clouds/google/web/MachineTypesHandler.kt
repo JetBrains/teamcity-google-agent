@@ -20,13 +20,12 @@ import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
 import org.jdom.Element
-import javax.servlet.http.HttpServletRequest
 
 /**
  * Handles machine types request.
  */
 internal class MachineTypesHandler : GoogleResourceHandler() {
-    override fun handle(connector: GoogleApiConnector, request: HttpServletRequest) = async(CommonPool) {
+    override fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = async(CommonPool) {
         val machineTypes = connector.getMachineTypesAsync().await()
         val machineTypesElement = Element("machineTypes")
 
