@@ -65,7 +65,7 @@
             <tr>
                 <th><label for="${cons.sourceImage}">Image: <l:star/></label></th>
                 <td>
-                    <select name="${cons.sourceImage}" class="longField"
+                    <select name="${cons.sourceImage}" class="longField ignoreModified"
                             data-bind="options: sourceImages, optionsCaption: '<Select image>',
                              optionsText: 'text', optionsValue: 'id', value: image().sourceImage"></select>
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
@@ -75,7 +75,7 @@
             <tr>
                 <th><label for="${cons.zone}">Zone: <l:star/></label></th>
                 <td>
-                    <select name="${cons.zone}" class="longField"
+                    <select name="${cons.zone}" class="longField ignoreModified"
                             data-bind="options: zones, optionsText: 'text', optionsValue: 'id',
                              value: image().zone"></select>
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
@@ -85,7 +85,7 @@
             <tr>
                 <th><label for="${cons.vmNamePrefix}">Agent name prefix: <l:star/></label></th>
                 <td>
-                    <input type="text" name="${cons.vmNamePrefix}" class="longField"
+                    <input type="text" name="${cons.vmNamePrefix}" class="longField ignoreModified"
                            data-bind="textInput: image().vmNamePrefix"/>
                     <span class="smallNote">It must be unique per cloud profile</span>
                     <span class="error option-error" data-bind="validationMessage: image().vmNamePrefix"></span>
@@ -95,7 +95,7 @@
                 <th><label for="${cons.maxInstancesCount}">Instances limit: <l:star/></label></th>
                 <td>
                     <div>
-                        <input type="text" name="${cons.maxInstancesCount}" class="longField"
+                        <input type="text" name="${cons.maxInstancesCount}" class="longField ignoreModified"
                                data-bind="textInput: image().maxInstances"/>
                         <span class="smallNote">Maximum number of instances which can be started</span>
                         <span class="error option-error" data-bind="validationMessage: image().maxInstances"></span>
@@ -105,7 +105,7 @@
             <tr>
                 <th><label for="${cons.machineType}">Machine type: <l:star/></label></th>
                 <td>
-                    <select name="${cons.machineType}" class="longField"
+                    <select name="${cons.machineType}" class="longField ignoreModified"
                             data-bind="options: machineTypes, optionsText: 'text', optionsValue: 'id',
                              value: image().machineType"></select>
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
@@ -114,7 +114,8 @@
             <tr>
                 <th class="noBorder"></th>
                 <td>
-                    <input type="checkbox" name="${cons.preemptible}" data-bind="checked: image().preemptible"/>
+                    <input type="checkbox" name="${cons.preemptible}" class="ignoreModified"
+                           data-bind="checked: image().preemptible"/>
                     <label for="${cons.preemptible}">Use preemptible VM Instances
                         <bs:help urlPrefix="https://cloud.google.com/preemptible-vms/" file=""/>
                     </label>
@@ -123,7 +124,7 @@
             <tr>
                 <th><label for="${cons.network}">Network: <l:star/></label></th>
                 <td>
-                    <select name="${cons.network}" class="longField"
+                    <select name="${cons.network}" class="longField ignoreModified"
                             data-bind="options: networks, optionsText: 'text', optionsValue: 'id',
                              value: image().network, css: {hidden: networks().length == 0}"></select>
                     <div class="longField inline-block" data-bind="css: {hidden: networks().length > 0}">
@@ -135,7 +136,7 @@
             <tr class="advancedSetting">
                 <th><label for="${cons.agentPoolId}">Agent pool:</label></th>
                 <td>
-                    <select name="prop:${cons.agentPoolId}" class="longField"
+                    <select name="prop:${cons.agentPoolId}" class="longField ignoreModified"
                             data-bind="options: agentPools, optionsText: 'text', optionsValue: 'id',
                         value: image().agentPoolId"></select>
                     <span id="error_${cons.agentPoolId}" class="error"></span>
