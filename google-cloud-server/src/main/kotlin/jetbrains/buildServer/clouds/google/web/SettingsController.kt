@@ -53,6 +53,7 @@ class SettingsController(server: SBuildServer,
         HANDLERS.put("networks", NetworksHandler())
         HANDLERS.put("machineTypes", MachineTypesHandler())
         HANDLERS.put("images", ImagesHandler())
+        HANDLERS.put("permissions", PermissionsHandler())
     }
 
     override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {

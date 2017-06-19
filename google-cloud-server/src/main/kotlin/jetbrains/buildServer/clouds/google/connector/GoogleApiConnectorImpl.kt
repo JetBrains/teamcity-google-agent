@@ -5,6 +5,7 @@ import com.google.api.client.json.GenericJson
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.compute.*
 import com.google.cloud.compute.NetworkId
+import com.google.cloud.resourcemanager.ResourceManagerOptions
 import jetbrains.buildServer.clouds.CloudException
 import jetbrains.buildServer.clouds.CloudInstanceUserData
 import jetbrains.buildServer.clouds.base.connector.AbstractInstance
@@ -18,7 +19,7 @@ import kotlinx.coroutines.experimental.CoroutineStart
 import kotlinx.coroutines.experimental.async
 
 
-class GoogleApiConnectorImpl(accessKey: String) : GoogleApiConnector {
+class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector {
 
     private val comparator = AlphaNumericStringComparator()
     private val compute: Compute
@@ -45,7 +46,21 @@ class GoogleApiConnectorImpl(accessKey: String) : GoogleApiConnector {
     }
 
     override fun test() {
-        compute.listZones()
+        val builder = ResourceManagerOptions.newBuilder()
+        accessKey.trim().byteInputStream().use {
+            val credentials = GoogleCredentials.fromStream(it)
+            builder.setCredentials(credentials)
+        }
+
+        val resourceManager = builder.build().service
+        val missingPermissions = mutableListOf<String>()
+        resourceManager.testPermissions(myProjectId, REQUIRED_PERMISSIONS).forEachIndexed { i, exists ->
+            if (!exists) missingPermissions.add(REQUIRED_PERMISSIONS[i])
+        }
+
+        if (missingPermissions.isNotEmpty()) {
+            throw CloudException(missingPermissions.joinToString(", ", "Missing required permissions: "))
+        }
     }
 
     override fun createVmAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = async(CommonPool, CoroutineStart.LAZY) {
@@ -174,5 +189,16 @@ class GoogleApiConnectorImpl(accessKey: String) : GoogleApiConnector {
 
     fun setProfileId(profileId: String) {
         myProfileId = profileId
+    }
+
+    companion object {
+        val REQUIRED_PERMISSIONS = listOf(
+                "compute.images.list",
+                "compute.instances.create",
+                "compute.instances.list",
+                "compute.instances.setMetadata",
+                "compute.machineTypes.list",
+                "compute.networks.list",
+                "compute.zones.list")
     }
 }

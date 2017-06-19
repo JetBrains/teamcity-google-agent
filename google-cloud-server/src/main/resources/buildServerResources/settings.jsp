@@ -32,6 +32,9 @@
                               dragleave: function() { dragLeaveHandler(); },
                               drop: function(data, event) { return dropHandler(event) } },
                               css: { attentionComment: isDragOver }">${propertiesBean.properties[cons.accessKey]}</textarea>
+                    <span data-bind="css: {invisible: !validatingKey()}">
+                        <i class="icon-refresh icon-spin"></i>
+                    </span>
                     <div data-bind="visible: hasFileReader">
                         <span class="smallNote">You could paste JSON file contents, select local file or drop it onto the text area.</span>
                         <input type="file"

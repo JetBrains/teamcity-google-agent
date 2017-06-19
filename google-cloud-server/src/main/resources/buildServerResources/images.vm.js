@@ -17,6 +17,7 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
     var self = this;
 
     self.loadingResources = ko.observable(false);
+    self.validatingKey = ko.observable(false);
     self.errorResources = ko.observable("");
     self.isShowAccessKey = ko.observable(true);
     self.isDragOver = ko.observable(false);
@@ -24,7 +25,32 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
 
     // Credentials
     self.credentials = ko.validatedObservable({
-        accessKey: ko.observable().extend({required: true})
+        accessKey: ko.observable().extend({required: true}).extend({
+            validation: {
+                async: true,
+                validator: function (accessKey, otherVal, callback) {
+                    var url = getBasePath() + "&resource=permissions";
+                    self.validatingKey(true);
+
+                    $.post(url, {
+                        "prop:secure:accessKey": accessKey
+                    }).then(function (response) {
+                        var $response = $(response);
+                        var errors = getErrors($response);
+                        if (errors) {
+                            callback({isValid: false, message: errors});
+                        } else {
+                            callback(true);
+                        }
+                    }, function (error) {
+                        callback({isValid: false, message: error.message});
+                    }).always(function() {
+                        self.validatingKey(false);
+                    });
+                },
+                message: 'Invalid key'
+            }
+        })
     });
 
     self.isValidCredentials = ko.pureComputed(function () {
@@ -74,8 +100,10 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
     self.images = ko.observableArray();
 
     // Reload info on credentials change
-    self.credentials().accessKey.subscribe(function (accessKey) {
-        if (!accessKey) return;
+    self.credentials().accessKey.isValidating.subscribe(function (isValidating) {
+        if(isValidating || !self.credentials().accessKey.isValid()){
+            return;
+        }
 
         self.isShowAccessKey(false);
 
@@ -183,7 +211,7 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
         $.post(url, {
             "prop:secure:accessKey": accessKey
         }).then(function (response) {
-            var $response = $j(response);
+            var $response = $(response);
             var errors = getErrors($response);
             if (errors) {
                 self.errorResources(errors);
@@ -256,7 +284,9 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
     function getErrors($response) {
         var $errors = $response.find("errors:eq(0) error");
         if ($errors.length) {
-            return $errors.text();
+            return $.map($errors, function(error) {
+              return $(error).text();
+            }).join(", ");
         }
 
         return "";
@@ -297,7 +327,7 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
     (function loadAgentPools() {
         var url = baseUrl + "?resource=agentPools";
         return $.post(url).then(function (response) {
-            var $response = $j(response);
+            var $response = $(response);
             var errors = getErrors($response);
             if (errors) {
                 self.errorResources(errors);
