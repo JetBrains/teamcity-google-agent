@@ -22,7 +22,7 @@
         <tr>
             <th><label for="${cons.accessKey}">JSON private key: <l:star/></label></th>
             <td>
-                <div data-bind="visible: isShowAccessKey || !isValidCredentials()">
+                <div data-bind="visible: isShowAccessKey || !isValidCredentials()" style="display: none">
                     <textarea name="prop:${cons.accessKey}" class="longField"
                               rows="5" cols="49"
                               data-bind="initializeValue: credentials().accessKey,
@@ -33,7 +33,7 @@
                               drop: function(data, event) { return dropHandler(event) } },
                               css: { attentionComment: isDragOver }">${propertiesBean.properties[cons.accessKey]}</textarea>
                     <div data-bind="visible: hasFileReader">
-                        <span class="smallNote">You could paste JSON file contents, select local file or drop onto text area.</span>
+                        <span class="smallNote">You could paste JSON file contents, select local file or drop it onto the text area.</span>
                         <input type="file"
                                data-bind="event: { change: function() { loadAccessKey($element.files[0]) } }"/>
                     </div>
