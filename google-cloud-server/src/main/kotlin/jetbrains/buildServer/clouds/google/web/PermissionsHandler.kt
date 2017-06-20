@@ -11,11 +11,17 @@ import org.jdom.Element
  */
 internal class PermissionsHandler : GoogleResourceHandler() {
     override fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = async(CommonPool) {
+        val permissions = Element("permissions")
         try {
             connector.test()
-        } catch (ignored: ResourceManagerException) {
+        } catch (e: ResourceManagerException) {
+            e.message?.let {
+                if (it.contains("Google Cloud Resource Manager API has not been used in project")) {
+                    return@async permissions
+                }
+            }
+            throw e
         }
-
-        Element("permissions")
+        permissions
     }
 }
