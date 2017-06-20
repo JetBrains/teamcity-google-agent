@@ -19,7 +19,7 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
     self.loadingResources = ko.observable(false);
     self.validatingKey = ko.observable(false);
     self.errorResources = ko.observable("");
-    self.isShowAccessKey = ko.observable(true);
+    self.isShowAccessKey = ko.observable(false);
     self.isDragOver = ko.observable(false);
     self.hasFileReader = ko.observable(typeof FileReader !== "undefined");
 
@@ -350,4 +350,12 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
             console.log(error);
         });
     })();
+
+    self.afterRender = function () {
+        if (!self.credentials().accessKey()) {
+            self.isShowAccessKey(true);
+        } else {
+            self.loadInfo();
+        }
+    };
 }

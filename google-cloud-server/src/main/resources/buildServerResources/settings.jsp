@@ -16,7 +16,7 @@
     BS.LoadStyleSheetDynamically("<c:url value='${resPath}settings.css'/>");
 </script>
 
-<div id="google-setting" data-bind="validationOptions: {insertMessages: false}">
+<div id="google-setting" data-bind="validationOptions: {insertMessages: false}, template: { afterRender: afterRender }">
 
     <table class="runnerFormTable">
         <tr>
