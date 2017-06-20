@@ -55,8 +55,7 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
             throw QuotaException("Unable to start more instances. Limit has reached")
         }
 
-        val instance = tryToStartStoppedInstanceAsync().await()
-        instance ?: createInstance(userData)
+        createInstance(userData)
     }
 
     /**
@@ -99,55 +98,6 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
         return instance
     }
 
-    /**
-     * Tries to find and start stopped instance.
-     *
-     * @return instance if it found.
-     */
-    private fun tryToStartStoppedInstanceAsync() = async(CommonPool) {
-        val instances = stoppedInstances
-        if (instances.isNotEmpty()) {
-            val validInstances = if (myImageDetails.behaviour.isDeleteAfterStop) {
-                LOG.info("Will remove all virtual machines due to cloud image settings")
-                emptyList()
-            } else instances
-
-            val invalidInstances = instances - validInstances
-            val instance = validInstances.firstOrNull()
-
-            instance?.status = InstanceStatus.SCHEDULED_TO_START
-
-            async(CommonPool) {
-                invalidInstances.forEach {
-                    try {
-                        LOG.info("Removing virtual machine ${it.name}")
-                        myApiConnector.deleteVmAsync(it).await()
-                        removeInstance(it.instanceId)
-                    } catch (e: Throwable) {
-                        LOG.warnAndDebugDetails(e.message, e)
-                        it.status = InstanceStatus.ERROR
-                        it.updateErrors(TypedCloudErrorInfo.fromException(e))
-                    }
-                }
-
-                instance?.let {
-                    try {
-                        LOG.info("Starting stopped virtual machine ${it.name}")
-                        myApiConnector.startVmAsync(it).await()
-                    } catch (e: Throwable) {
-                        LOG.warnAndDebugDetails(e.message, e)
-                        it.status = InstanceStatus.ERROR
-                        it.updateErrors(TypedCloudErrorInfo.fromException(e))
-                    }
-                }
-            }
-
-            return@async instance
-        }
-
-        null
-    }
-
     override fun restartInstance(instance: GoogleCloudInstance) {
         instance.status = InstanceStatus.RESTARTING
 
@@ -171,7 +121,6 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
                 if (myImageDetails.behaviour.isDeleteAfterStop) {
                     LOG.info("Removing virtual machine ${instance.name} due to cloud image settings")
                     myApiConnector.deleteVmAsync(instance).await()
-                    removeInstance(instance.instanceId)
                 } else {
                     LOG.info("Stopping virtual machine ${instance.name}")
                     myApiConnector.stopVmAsync(instance).await()
@@ -208,14 +157,6 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
      */
     private val activeInstances: List<GoogleCloudInstance>
         get() = instances.filter { instance -> instance.status.isStartingOrStarted }
-
-    /**
-     * Returns stopped instances.
-     *
-     * @return instances.
-     */
-    private val stoppedInstances: List<GoogleCloudInstance>
-        get() = instances.filter { instance -> instance.status == InstanceStatus.STOPPED }
 
     companion object {
         private val LOG = Logger.getInstance(GoogleCloudImage::class.java.name)
