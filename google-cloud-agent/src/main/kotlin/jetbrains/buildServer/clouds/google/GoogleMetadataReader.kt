@@ -68,12 +68,14 @@ class GoogleMetadataReader(events: EventDispatcher<AgentLifeCycleListener>,
         val metadata = deserializeMetadata(json)
         if (metadata == null) {
             LOG.info("Google Compute integration is not available: Invalid instance metadata")
+            LOG.debug(json)
             return
         }
 
         val data = CloudInstanceUserData.deserialize(metadata.attributes?.teamcityData ?: "")
         if (data == null) {
             LOG.info("Google Compute integration is not available: No TeamCity metadata")
+            LOG.debug(json)
             return
         }
 
