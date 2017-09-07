@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-function GoogleImagesViewModel($, ko, baseUrl, dialog) {
+function GoogleImagesViewModel($, ko, dialog, config) {
     var self = this;
 
     self.loadingResources = ko.observable(false);
@@ -44,7 +44,7 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
                         }
                     }, function (error) {
                         callback({isValid: false, message: error.message});
-                    }).always(function() {
+                    }).always(function () {
                         self.validatingKey(false);
                     });
                 },
@@ -101,7 +101,7 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
 
     // Reload info on credentials change
     self.credentials().accessKey.isValidating.subscribe(function (isValidating) {
-        if(isValidating || !self.credentials().accessKey.isValid()){
+        if (isValidating || !self.credentials().accessKey.isValid()) {
             return;
         }
 
@@ -278,14 +278,14 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
     }
 
     function getBasePath() {
-        return baseUrl + "?";
+        return config.baseUrl + "?";
     }
 
     function getErrors($response) {
         var $errors = $response.find("errors:eq(0) error");
         if ($errors.length) {
-            return $.map($errors, function(error) {
-              return $(error).text();
+            return $.map($errors, function (error) {
+                return $(error).text();
             }).join(", ");
         }
 
@@ -325,7 +325,7 @@ function GoogleImagesViewModel($, ko, baseUrl, dialog) {
     }
 
     (function loadAgentPools() {
-        var url = baseUrl + "?resource=agentPools";
+        var url = config.baseUrl + "?resource=agentPools&projectId=" + encodeURIComponent(config.projectId);
         return $.post(url).then(function (response) {
             var $response = $(response);
             var errors = getErrors($response);

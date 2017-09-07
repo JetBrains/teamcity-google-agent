@@ -220,7 +220,10 @@
         $j.getScript("<c:url value="${resPath}images.vm.js"/>")
     ).then(function () {
         var dialog = document.getElementById("google-setting");
-        ko.applyBindings(new GoogleImagesViewModel($j, ko, "<c:url value='${basePath}'/>", BS.GoogleImageDialog), dialog);
+        ko.applyBindings(new GoogleImagesViewModel($j, ko, BS.GoogleImageDialog, {
+            baseUrl: "<c:url value='${basePath}'/>",
+            projectId: "${projectId}"
+        }), dialog);
     });
 </script>
 <table class="runnerFormTable">
