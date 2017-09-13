@@ -105,7 +105,7 @@ class SettingsController(server: SBuildServer,
             try {
                 xmlResponse.addContent(promises[resource]?.await())
             } catch (e: Throwable) {
-                LOG.debug(e)
+                LOG.infoAndDebugDetails(e.message, e)
                 e.message?.let {
                     if (!errorMessages.contains(it)) {
                         errors.addError(resource, it)

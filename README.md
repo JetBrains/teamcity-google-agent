@@ -14,7 +14,18 @@ You can [download the plugin](https://plugins.jetbrains.com/plugin/9704-google-c
 
 ## Configuration
 
-The plugin supports Google Compute images to start new instances. You also need to create a new JSON private key and assign the `Compute Engine Instance Admin` [role](https://cloud.google.com/compute/docs/access/#predefined_short_product_name_roles).
+For configuration details please take a look at the [TeamCity Google Cloud plugins](https://blog.jetbrains.com/teamcity/2017/06/run-teamcity-ci-builds-in-google-cloud/) blog post.
+
+The plugin supports Google Compute images to start new instances. You also need to create a new JSON private key and assign the `Compute Engine Instance Admin (v1)` [role](https://cloud.google.com/compute/docs/access/#predefined_short_product_name_roles) or create your own with a following permissions:
+* `compute.images.list`
+* `compute.instances.create`
+* `compute.instances.list`
+* `compute.instances.setMetadata`
+* `compute.machineTypes.list`
+* `compute.networks.list`
+* `compute.zones.list`
+
+To verify whether your service account has all required permissions please enable [Google Cloud Resource Manager API](https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview) in your project.
 
 ### Image Creation
 

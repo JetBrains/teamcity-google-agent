@@ -45,10 +45,12 @@
                 <span class="smallNote">Specify the JSON private key.
                     <bs:help urlPrefix="https://cloud.google.com/storage/docs/authentication#generating-a-private-key"
                              file=""/><br/>
-                    You need to assign <em>Compute Engine Instance Admin</em> role
+                    You need to assign <em>Compute Engine Instance Admin (v1)</em> role
                             <bs:help
                                     urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_short_product_name_roles"
-                                    file=""/>
+                                    file=""/><br/>
+                    To verify permissions please enable
+                    <a href="https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview" target="_blank">Google Cloud Resource Manager API</a>.
                 </span>
                 <span class="error option-error" data-bind="validationMessage: credentials().accessKey"></span>
             </td>
