@@ -134,26 +134,30 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
 
     override fun getImagesAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listImages().iterateAll()
-                .sortedWith(compareBy(comparator, { t -> t.description }))
-                .associate { it -> it.imageId.image to it.description }
+                .map { it.imageId.image to (it.description ?: it.imageId.image) }
+                .sortedWith(compareBy(comparator, { it -> it.second }))
+                .associate { it -> it.first to it.second }
     }
 
     override fun getZonesAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listZones().iterateAll()
-                .sortedWith(compareBy(comparator, { t -> t.description }))
-                .associate { it -> it.zoneId.zone to it.description }
+                .map { it -> it.zoneId.zone to (it.description ?: it.zoneId.zone) }
+                .sortedWith(compareBy(comparator, { it -> it.second }))
+                .associate { it -> it.first to it.second }
     }
 
     override fun getMachineTypesAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listMachineTypes().iterateAll()
-                .sortedWith(compareBy(comparator, { t -> t.description }))
-                .associate { it -> it.machineTypeId.type to it.description }
+                .map { it -> it.machineTypeId.type to (it.description ?: it.machineTypeId.type) }
+                .sortedWith(compareBy(comparator, { it -> it.second }))
+                .associate { it -> it.first to it.second }
     }
 
     override fun getNetworksAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listNetworks().iterateAll()
-                .sortedWith(compareBy(comparator, { t -> t.description }))
-                .associate { it -> it.networkId.network to it.description }
+                .map { it -> it.networkId.network to (it.description ?: it.networkId.network) }
+                .sortedWith(compareBy(comparator, { it -> it.second }))
+                .associate { it -> it.first to it.second }
     }
 
     override fun <R : AbstractInstance?> fetchInstances(image: GoogleCloudImage): MutableMap<String, R> {
