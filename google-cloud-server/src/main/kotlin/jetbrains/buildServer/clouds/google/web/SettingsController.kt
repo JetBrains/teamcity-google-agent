@@ -91,9 +91,7 @@ class SettingsController(server: SBuildServer,
         resources.filterNotNull()
                 .forEach { resource ->
                     HANDLERS[resource]?.let {
-                        promises += resource to async(CommonPool, CoroutineStart.LAZY) {
-                            it.handle(parameters).await()
-                        }
+                        promises += resource to it.handle(parameters)
                     }
                 }
 
