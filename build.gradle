@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.1.4-3"
+    id "org.jetbrains.kotlin.jvm" version "1.1.51"
 }
 
 ext {
@@ -20,10 +20,12 @@ allprojects {
 subprojects {
     apply plugin: "kotlin"
 
+    kotlin { experimental { coroutines 'enable' } }
+
     test.useTestNG()
     jar.version = null
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.2.1'
+    gradleVersion = '4.2.1'
 }

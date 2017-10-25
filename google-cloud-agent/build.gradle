@@ -1,13 +1,11 @@
 plugins {
-    id 'com.github.rodm.teamcity-agent' version "0.11"
+    id 'com.github.rodm.teamcity-agent' version "1.0"
 }
 
 teamcity {
     version = teamcityVersion
-    descriptor {
-        pluginDeployment {
-            useSeparateClassloader = true
-        }
+    agent {
+        descriptor = project.file('teamcity-plugin.xml')
     }
 }
 
