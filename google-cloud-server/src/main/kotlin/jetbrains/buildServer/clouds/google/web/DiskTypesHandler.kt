@@ -14,6 +14,9 @@ internal class DiskTypesHandler : GoogleResourceHandler() {
         val diskTypesElement = Element("diskTypes")
 
         for ((id, displayName) in diskTypes) {
+            // Show only persistent disk types
+            if (!id.startsWith("pd-")) continue
+
             diskTypesElement.addContent(Element("diskType").apply {
                 setAttribute("id", id)
                 text = displayName
