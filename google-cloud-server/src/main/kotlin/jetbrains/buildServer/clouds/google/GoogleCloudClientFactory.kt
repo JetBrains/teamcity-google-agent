@@ -38,7 +38,7 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
     override fun createNewClient(state: CloudState,
                                  images: Collection<GoogleCloudImageDetails>,
                                  params: CloudClientParameters): GoogleCloudClient {
-        return createNewClient(state, params, arrayOf<TypedCloudErrorInfo>())
+        return createNewClient(state, params, emptyArray())
     }
 
     override fun createNewClient(state: CloudState,
@@ -60,7 +60,24 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
     }
 
     override fun parseImageData(params: CloudClientParameters): Collection<GoogleCloudImageDetails> {
-        return GoogleUtils.parseImageData(GoogleCloudImageDetails::class.java, params)
+        if (!params.getParameter(CloudImageParameters.SOURCE_IMAGES_JSON).isNullOrEmpty()) {
+            return GoogleUtils.parseImageData(GoogleCloudImageDetails::class.java, params)
+        }
+
+        return params.cloudImages.map {
+            GoogleCloudImageDetails(
+                    it.id!!,
+                    it.getParameter(GoogleConstants.SOURCE_IMAGE)!!,
+                    it.getParameter(GoogleConstants.ZONE)!!,
+                    it.getParameter(GoogleConstants.NETWORK_ID)!!,
+                    it.getParameter(GoogleConstants.MACHINE_TYPE)!!,
+                    (it.getParameter(GoogleConstants.MAX_INSTANCES_COUNT) ?: "1").toInt(),
+                    it.agentPoolId,
+                    it.getParameter(GoogleConstants.PROFILE_ID)!!,
+                    (it.getParameter(GoogleConstants.PREEMPTIBLE) ?: "").toBoolean(),
+                    it.getParameter(GoogleConstants.DISK_TYPE)
+            )
+        }
     }
 
     override fun checkClientParams(params: CloudClientParameters): Array<TypedCloudErrorInfo>? {
