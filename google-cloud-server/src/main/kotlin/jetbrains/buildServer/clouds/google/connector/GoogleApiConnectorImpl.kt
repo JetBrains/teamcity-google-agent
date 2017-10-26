@@ -74,6 +74,11 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
         val attachedDisk = AttachedDisk.of(AttachedDisk.CreateDiskConfiguration
                 .newBuilder(imageId)
                 .setAutoDelete(true)
+                .apply {
+                    if (!details.diskType.isNullOrBlank()) {
+                        setDiskType(DiskTypeId.of(zone, details.diskType))
+                    }
+                }
                 .build())
         val networkInterface = NetworkInterface.newBuilder(networkId)
                 .setAccessConfigurations(listOf(NetworkInterface.AccessConfig.of()))
@@ -156,6 +161,13 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
     override fun getNetworksAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listNetworks().iterateAll()
                 .map { it -> it.networkId.network to (it.description ?: it.networkId.network) }
+                .sortedWith(compareBy(comparator, { it -> it.second }))
+                .associate { it -> it.first to it.second }
+    }
+
+    override fun getDiskTypesAsync() = async(CommonPool, CoroutineStart.LAZY) {
+        compute.listDiskTypes().iterateAll()
+                .map { it -> it.diskTypeId.type to (it.description ?: it.diskTypeId.type) }
                 .sortedWith(compareBy(comparator, { it -> it.second }))
                 .associate { it -> it.first to it.second }
     }

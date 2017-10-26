@@ -42,6 +42,9 @@ class GoogleConstants {
     val machineType: String
         get() = MACHINE_TYPE
 
+    val diskType: String
+        get() = DISK_TYPE
+
     val vmNamePrefix: String
         get() = CloudImageParameters.SOURCE_ID_FIELD
 
@@ -61,6 +64,7 @@ class GoogleConstants {
         const val NETWORK_ID = "network"
         const val MAX_INSTANCES_COUNT = "maxInstances"
         const val MACHINE_TYPE = "machineType"
+        const val DISK_TYPE = "diskType"
         const val TAG_SERVER = "teamcityServer"
         const val TAG_DATA = "teamcityData"
         const val TAG_PROFILE = "teamcityProfile"

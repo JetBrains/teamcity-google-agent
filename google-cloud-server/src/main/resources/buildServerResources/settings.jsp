@@ -117,6 +117,15 @@
                 </td>
             </tr>
             <tr>
+                <th><label for="${cons.diskType}">Disk type: <l:star/></label></th>
+                <td>
+                    <select name="${cons.diskType}" class="longField ignoreModified"
+                            data-bind="options: diskTypes, optionsText: 'text', optionsValue: 'id',
+                             value: image().diskType, optionsCaption: '<Not specified>'"></select>
+                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
+                </td>
+            </tr>
+            <tr>
                 <th class="noBorder"></th>
                 <td>
                     <input type="checkbox" name="${cons.preemptible}" class="ignoreModified"

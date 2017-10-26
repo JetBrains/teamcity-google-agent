@@ -66,6 +66,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         maxInstances: ko.observable(1).extend({required: true, min: 1}),
         preemptible: ko.observable(false),
         machineType: ko.observable().extend({required: true}),
+        diskType: ko.observable(),
         vmNamePrefix: ko.observable('').trimmed().extend({required: true, maxLength: maxLength}).extend({
             validation: {
                 validator: function (value) {
@@ -91,6 +92,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     self.zones = ko.observableArray([]);
     self.networks = ko.observableArray([]);
     self.machineTypes = ko.observableArray([]);
+    self.diskTypes = ko.observableArray([]);
     self.agentPools = ko.observableArray([]);
 
     // Hidden fields for serialized values
@@ -140,6 +142,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         model.zone(image.zone);
         model.network(image.network);
         model.machineType(image.machineType);
+        model.diskType(image.diskType);
         model.maxInstances(image.maxInstances);
         model.preemptible(image.preemptible);
         model.vmNamePrefix(image['source-id']);
@@ -167,6 +170,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             preemptible: model.preemptible(),
             'source-id': model.vmNamePrefix(),
             machineType: model.machineType(),
+            diskType: model.diskType(),
             agent_pool_id: model.agentPoolId(),
             profileId: model.profileId()
         };
@@ -206,6 +210,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             "&resource=zones" +
             "&resource=networks" +
             "&resource=machineTypes" +
+            "&resource=diskTypes" +
             "&resource=images";
 
         $.post(url, {
@@ -223,6 +228,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             self.sourceImages(getSourceImages($response));
             self.zones(getZones($response));
             self.machineTypes(getMachineTypes($response));
+            self.diskTypes(getDiskTypes($response));
             self.networks(getNetworks($response));
         }, function (error) {
             self.errorResources("Failed to load data: " + error.message);
@@ -306,6 +312,12 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     function getMachineTypes($response) {
         return $response.find("machineTypes:eq(0) machineType").map(function () {
+            return {id: $(this).attr("id"), text: $(this).text()};
+        }).get();
+    }
+
+    function getDiskTypes($response) {
+        return $response.find("diskTypes:eq(0) diskType").map(function () {
             return {id: $(this).attr("id"), text: $(this).text()};
         }).get();
     }

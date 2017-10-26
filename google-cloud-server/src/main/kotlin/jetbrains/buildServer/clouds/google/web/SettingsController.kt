@@ -42,18 +42,19 @@ class SettingsController(server: SBuildServer,
                          manager: WebControllerManager,
                          agentPoolManager: AgentPoolManager) : BaseController(server) {
 
-    private val HANDLERS = TreeMap<String, ResourceHandler>(String.CASE_INSENSITIVE_ORDER)
+    private val myHandlers = TreeMap<String, ResourceHandler>(String.CASE_INSENSITIVE_ORDER)
     private val myJspPath: String = myPluginDescriptor.getPluginResourcesPath("settings.jsp")
     private val myHtmlPath: String = myPluginDescriptor.getPluginResourcesPath("settings.html")
 
     init {
         manager.registerController(myHtmlPath, this)
-        HANDLERS.put("agentPools", AgentPoolHandler(agentPoolManager))
-        HANDLERS.put("zones", ZonesHandler())
-        HANDLERS.put("networks", NetworksHandler())
-        HANDLERS.put("machineTypes", MachineTypesHandler())
-        HANDLERS.put("images", ImagesHandler())
-        HANDLERS.put("permissions", PermissionsHandler())
+        myHandlers.put("agentPools", AgentPoolHandler(agentPoolManager))
+        myHandlers.put("zones", ZonesHandler())
+        myHandlers.put("networks", NetworksHandler())
+        myHandlers.put("machineTypes", MachineTypesHandler())
+        myHandlers.put("diskTypes", DiskTypesHandler())
+        myHandlers.put("images", ImagesHandler())
+        myHandlers.put("permissions", PermissionsHandler())
     }
 
     override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
@@ -90,7 +91,7 @@ class SettingsController(server: SBuildServer,
 
         resources.filterNotNull()
                 .forEach { resource ->
-                    HANDLERS[resource]?.let {
+                    myHandlers[resource]?.let {
                         promises += resource to it.handle(parameters)
                     }
                 }

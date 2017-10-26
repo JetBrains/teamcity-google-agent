@@ -43,4 +43,6 @@ interface GoogleApiConnector : CloudApiConnector<GoogleCloudImage, GoogleCloudIn
     fun getMachineTypesAsync(): Deferred<Map<String, String>>
 
     fun getNetworksAsync(): Deferred<Map<String, String>>
+
+    fun getDiskTypesAsync(): Deferred<Map<String, String>>
 }
