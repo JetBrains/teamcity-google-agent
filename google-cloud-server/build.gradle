@@ -2,10 +2,6 @@ plugins {
     id 'com.github.rodm.teamcity-server' version "1.0"
 }
 
-repositories {
-    maven { url "http://jcenter.bintray.com" }
-}
-
 teamcity {
     version = teamcityVersion
 
