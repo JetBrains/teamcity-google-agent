@@ -29,6 +29,7 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
+import java.net.UnknownHostException
 
 class GoogleMetadataReader(events: EventDispatcher<AgentLifeCycleListener>,
                            private val configuration: BuildAgentConfigurationEx,
@@ -50,9 +51,12 @@ class GoogleMetadataReader(events: EventDispatcher<AgentLifeCycleListener>,
                 it.execute(HttpGet(METADATA_URL).apply {
                     addHeader("Metadata-Flavor", "Google")
                 })
+            } catch (e: UnknownHostException) {
+                LOG.info("Google Compute integration is not available: $METADATA_URL is not accessible")
+                return@use
             } catch (e: Exception) {
                 LOG.infoAndDebugDetails("Google Compute integration is not available: Failed to connect to $METADATA_URL: ${e.message}", e)
-                return
+                return@use
             }
 
             val statusCode = response.statusLine.statusCode
@@ -102,7 +106,7 @@ class GoogleMetadataReader(events: EventDispatcher<AgentLifeCycleListener>,
     }
 
     private fun createHttpClient(): CloseableHttpClient {
-        val requestConfig = RequestConfig.custom().setSocketTimeout(60000).setConnectTimeout(60000).build()
+        val requestConfig = RequestConfig.custom().setSocketTimeout(TIMEOUT).setConnectTimeout(TIMEOUT).build()
         return HttpClients.custom().useSystemProperties().setDefaultRequestConfig(requestConfig).build()
     }
 
@@ -127,15 +131,14 @@ class GoogleMetadataReader(events: EventDispatcher<AgentLifeCycleListener>,
     companion object {
         private val LOG = Logger.getInstance(GoogleMetadataReader::class.java.name)
         private val METADATA_URL = "http://metadata.google.internal/computeMetadata/v1/instance/?recursive=true"
+        private val TIMEOUT = 10000
         private val GSON = Gson()
 
-        fun deserializeMetadata(json: String): Metadata? {
-            try {
-                return GSON.fromJson<Metadata>(json, Metadata::class.java)
-            } catch (e: Exception) {
-                LOG.debug("Failed to deserialize JSON data ${e.message}", e)
-                return null
-            }
+        fun deserializeMetadata(json: String) = try {
+            GSON.fromJson<Metadata>(json, Metadata::class.java)
+        } catch (e: Exception) {
+            LOG.debug("Failed to deserialize JSON data ${e.message}", e)
+            null
         }
     }
 }
