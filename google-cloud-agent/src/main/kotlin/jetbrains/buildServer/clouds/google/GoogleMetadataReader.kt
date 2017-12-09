@@ -52,7 +52,7 @@ class GoogleMetadataReader(events: EventDispatcher<AgentLifeCycleListener>,
                     addHeader("Metadata-Flavor", "Google")
                 })
             } catch (e: UnknownHostException) {
-                LOG.info("Google Compute integration is not available: $METADATA_URL is not accessible")
+                LOG.info("Google Compute integration is not available: could not access $METADATA_URL")
                 return@use
             } catch (e: Exception) {
                 LOG.infoAndDebugDetails("Google Compute integration is not available: Failed to connect to $METADATA_URL: ${e.message}", e)
