@@ -17,6 +17,7 @@ import jetbrains.buildServer.clouds.google.utils.AlphaNumericStringComparator
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.CoroutineStart
 import kotlinx.coroutines.experimental.async
+import java.util.concurrent.ConcurrentHashMap
 
 
 class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector {
@@ -82,6 +83,12 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
                 .build())
         val networkInterface = NetworkInterface.newBuilder(networkId)
                 .setAccessConfigurations(listOf(NetworkInterface.AccessConfig.of()))
+                .apply {
+                    details.subnet?.let {
+                        val region = regionByZone.getOrPut(zone, { compute.getZone(zone).region.region })
+                        setSubnetwork(SubnetworkId.of(region, it))
+                    }
+                }
                 .build()
         val instanceId = InstanceId.of(zone, instance.instanceId)
         val machineTypeId = MachineTypeId.of(zone, machineType)
@@ -146,13 +153,13 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
 
     override fun getZonesAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listZones().iterateAll()
-                .map { it -> it.zoneId.zone to (it.description ?: it.zoneId.zone) }
-                .sortedWith(compareBy(comparator, { it -> it.second }))
+                .map { it -> it.zoneId.zone to listOf<String>((it.description ?: it.zoneId.zone), it.region.region) }
+                .sortedWith(compareBy(comparator, { it -> it.second.first() }))
                 .associate { it -> it.first to it.second }
     }
 
-    override fun getMachineTypesAsync() = async(CommonPool, CoroutineStart.LAZY) {
-        compute.listMachineTypes().iterateAll()
+    override fun getMachineTypesAsync(zone: String) = async(CommonPool, CoroutineStart.LAZY) {
+        compute.listMachineTypes(zone).iterateAll()
                 .map { it -> it.machineTypeId.type to (it.description ?: it.machineTypeId.type) }
                 .sortedWith(compareBy(comparator, { it -> it.second }))
                 .associate { it -> it.first to it.second }
@@ -165,8 +172,15 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
                 .associate { it -> it.first to it.second }
     }
 
-    override fun getDiskTypesAsync() = async(CommonPool, CoroutineStart.LAZY) {
-        compute.listDiskTypes().iterateAll()
+    override fun getSubnetsAsync(region: String) = async(CommonPool, CoroutineStart.LAZY) {
+        compute.listSubnetworks(region).iterateAll()
+                .map { it -> it.subnetworkId.subnetwork to listOf((it.description ?: it.subnetworkId.subnetwork), it.network.network) }
+                .sortedWith(compareBy(comparator, { it -> it.second.first() }))
+                .associate { it -> it.first to it.second }
+    }
+
+    override fun getDiskTypesAsync(zone: String) = async(CommonPool, CoroutineStart.LAZY) {
+        compute.listDiskTypes(zone).iterateAll()
                 .map { it -> it.diskTypeId.type to (it.description ?: it.diskTypeId.type) }
                 .sortedWith(compareBy(comparator, { it -> it.second }))
                 .associate { it -> it.first to it.second }
@@ -216,5 +230,6 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
                 "compute.machineTypes.list",
                 "compute.networks.list",
                 "compute.zones.list")
+        val regionByZone: ConcurrentHashMap<String, String> = ConcurrentHashMap()
     }
 }

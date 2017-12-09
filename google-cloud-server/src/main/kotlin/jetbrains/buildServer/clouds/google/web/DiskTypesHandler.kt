@@ -1,5 +1,6 @@
 package jetbrains.buildServer.clouds.google.web
 
+import jetbrains.buildServer.clouds.google.GoogleConstants
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
@@ -10,7 +11,8 @@ import org.jdom.Element
  */
 internal class DiskTypesHandler : GoogleResourceHandler() {
     override fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = async(CommonPool) {
-        val diskTypes = connector.getDiskTypesAsync().await()
+        val zone = parameters[GoogleConstants.ZONE]!!
+        val diskTypes = connector.getDiskTypesAsync(zone).await()
         val diskTypesElement = Element("diskTypes")
 
         for ((id, displayName) in diskTypes) {

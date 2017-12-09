@@ -51,6 +51,7 @@ class SettingsController(server: SBuildServer,
         myHandlers.put("agentPools", AgentPoolHandler(agentPoolManager))
         myHandlers.put("zones", ZonesHandler())
         myHandlers.put("networks", NetworksHandler())
+        myHandlers.put("subnets", SubnetsHandler())
         myHandlers.put("machineTypes", MachineTypesHandler())
         myHandlers.put("diskTypes", DiskTypesHandler())
         myHandlers.put("images", ImagesHandler())

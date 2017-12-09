@@ -39,6 +39,9 @@ class GoogleConstants {
     val network: String
         get() = NETWORK_ID
 
+    val subnet: String
+        get() = SUBNET_ID
+
     val machineType: String
         get() = MACHINE_TYPE
 
@@ -61,7 +64,9 @@ class GoogleConstants {
         const val ACCESS_KEY = Constants.SECURE_PROPERTY_PREFIX + "accessKey"
         const val SOURCE_IMAGE = "sourceImage"
         const val ZONE = "zone"
+        const val REGION = "region"
         const val NETWORK_ID = "network"
+        const val SUBNET_ID = "subnet"
         const val MAX_INSTANCES_COUNT = "maxInstances"
         const val MACHINE_TYPE = "machineType"
         const val DISK_TYPE = "diskType"

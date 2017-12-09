@@ -17,6 +17,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     var self = this;
 
     self.loadingResources = ko.observable(false);
+    self.loadingResourcesByZone = ko.observable(false);
     self.validatingKey = ko.observable(false);
     self.errorResources = ko.observable("");
     self.isShowAccessKey = ko.observable(false);
@@ -29,7 +30,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             validation: {
                 async: true,
                 validator: function (accessKey, otherVal, callback) {
-                    var url = getBasePath() + "&resource=permissions";
+                    var url = getBasePath() + "resource=permissions";
                     self.validatingKey(true);
 
                     $.post(url, {
@@ -63,6 +64,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         sourceImage: ko.observable().extend({required: true}),
         zone: ko.observable().extend({required: true}),
         network: ko.observable().extend({required: true}),
+        subnet: ko.observable(),
         maxInstances: ko.observable(1).extend({required: true, min: 1}),
         preemptible: ko.observable(false),
         machineType: ko.observable().extend({required: true}),
@@ -91,9 +93,11 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     self.sourceImages = ko.observableArray([]);
     self.zones = ko.observableArray([]);
     self.networks = ko.observableArray([]);
+    self.subnets = ko.observableArray([]);
     self.machineTypes = ko.observableArray([]);
     self.diskTypes = ko.observableArray([]);
     self.agentPools = ko.observableArray([]);
+    self.nets = {};
 
     // Hidden fields for serialized values
     self.images_data = ko.observable();
@@ -121,6 +125,15 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         self.image().vmNamePrefix(vmName);
     });
 
+    self.image().zone.subscribe(function (zone) {
+        if (!zone) return;
+        loadInfoByZone(zone);
+    });
+
+    self.image().network.subscribe(function (network) {
+        changeSubnets(network, self.image().subnet());
+    });
+
     self.images_data.subscribe(function (data) {
         var images = ko.utils.parseJson(data || "[]");
         images.forEach(function (image) {
@@ -138,11 +151,42 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         var model = self.image();
         var image = data || {maxInstances: 1, preemptible: false};
 
+        var sourceImage = image.sourceImage;
+        if (sourceImage && !ko.utils.arrayFirst(self.sourceImages(), function (item) {
+                return item.id === sourceImage;
+            })) {
+            self.sourceImages({id: sourceImage, text: sourceImage});
+        }
+
+        var machineType = image.machineType;
+        if (machineType && !ko.utils.arrayFirst(self.machineTypes(), function (item) {
+                return item.id === machineType;
+            })) {
+            self.machineTypes({id: machineType, text: machineType});
+        }
+
+        var diskType = image.diskType;
+        if (diskType && !ko.utils.arrayFirst(self.diskTypes(), function (item) {
+                return item.id === diskType;
+            })) {
+            self.diskTypes({id: diskType, text: diskType});
+        }
+
+        var network = image.network;
+        if (network && !ko.utils.arrayFirst(self.networks(), function (item) {
+                return item.id === network;
+            })) {
+            self.networks({id: network, text: network});
+        }
+
         model.sourceImage(image.sourceImage);
         model.zone(image.zone);
-        model.network(image.network);
-        model.machineType(image.machineType);
-        model.diskType(image.diskType);
+        model.network(network);
+        var subnet = image.subnet;
+        changeSubnets(network, subnet);
+        model.subnet(subnet);
+        model.machineType(machineType);
+        model.diskType(diskType);
         model.maxInstances(image.maxInstances);
         model.preemptible(image.preemptible);
         model.vmNamePrefix(image['source-id']);
@@ -166,6 +210,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             sourceImage: model.sourceImage(),
             zone: model.zone(),
             network: model.network(),
+            subnet: model.subnet(),
             maxInstances: model.maxInstances(),
             preemptible: model.preemptible(),
             'source-id': model.vmNamePrefix(),
@@ -207,10 +252,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         self.loadingResources(true);
 
         var url = getBasePath() +
-            "&resource=zones" +
+            "resource=zones" +
             "&resource=networks" +
-            "&resource=machineTypes" +
-            "&resource=diskTypes" +
             "&resource=images";
 
         $.post(url, {
@@ -227,8 +270,6 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
             self.sourceImages(getSourceImages($response));
             self.zones(getZones($response));
-            self.machineTypes(getMachineTypes($response));
-            self.diskTypes(getDiskTypes($response));
             self.networks(getNetworks($response));
         }, function (error) {
             self.errorResources("Failed to load data: " + error.message);
@@ -237,6 +278,57 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             self.loadingResources(false);
         });
     };
+
+    function changeSubnets(network, subnet) {
+        if (!network) return;
+
+        var subnets = self.nets[network];
+        if (subnet && !subnets) {
+            subnets = [{id: subnet, text: subnet}];
+        }
+
+        self.subnets(subnets);
+    }
+
+    function loadInfoByZone(zoneId) {
+        var accessKey = self.credentials().accessKey();
+        if (!accessKey) return;
+
+        var zone = ko.utils.arrayFirst(self.zones(), function (item) {
+            return item.id === zoneId;
+        });
+
+        self.loadingResourcesByZone(true);
+
+        var url = getBasePath() +
+            "zone=" + zone.id +
+            "&region=" + zone.region +
+            "&resource=subnets" +
+            "&resource=machineTypes" +
+            "&resource=diskTypes";
+
+        $.post(url, {
+            "prop:secure:accessKey": accessKey
+        }).then(function (response) {
+            var $response = $(response);
+            var errors = getErrors($response);
+            if (errors) {
+                self.errorResources(errors);
+                return;
+            } else {
+                self.errorResources("");
+            }
+
+            self.machineTypes(getMachineTypes($response));
+            self.diskTypes(getDiskTypes($response));
+            getSubnets($response);
+        }, function (error) {
+            self.errorResources("Failed to load data: " + error.message);
+            console.log(error);
+        }).always(function () {
+            self.loadingResourcesByZone(false);
+        });
+    }
 
     self.showAccessKey = function () {
         self.isShowAccessKey(true);
@@ -300,13 +392,24 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     function getZones($response) {
         return $response.find("zones:eq(0) zone").map(function () {
-            return {id: $(this).attr("id"), text: $(this).text()};
+            return {id: $(this).attr("id"), region: $(this).attr("region"), text: $(this).text()};
         }).get();
     }
 
     function getNetworks($response) {
         return $response.find("networks:eq(0) network").map(function () {
             return {id: $(this).attr("id"), text: $(this).text()};
+        }).get();
+    }
+
+    function getSubnets($response) {
+        self.nets = {};
+        return $response.find("subnets:eq(0) subnet").map(function () {
+            var subnet = {id: $(this).attr("id"), text: $(this).text(), network: $(this).attr("network")};
+            var nets = self.nets[subnet.network] || [];
+            nets.push(subnet);
+            self.nets[subnet.network] = nets;
+            return subnet;
         }).get();
     }
 
@@ -366,8 +469,6 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     self.afterRender = function () {
         if (!self.credentials().accessKey()) {
             self.isShowAccessKey(true);
-        } else {
-            self.loadInfo();
         }
     };
 }

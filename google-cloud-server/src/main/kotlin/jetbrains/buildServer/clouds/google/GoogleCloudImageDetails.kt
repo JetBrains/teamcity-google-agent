@@ -33,6 +33,8 @@ class GoogleCloudImageDetails(
         val zone: String,
         @SerializedName(GoogleConstants.NETWORK_ID)
         val network: String?,
+        @SerializedName(GoogleConstants.SUBNET_ID)
+        val subnet: String?,
         @SerializedName(GoogleConstants.MACHINE_TYPE)
         val machineType: String,
         @SerializedName(GoogleConstants.MAX_INSTANCES_COUNT)

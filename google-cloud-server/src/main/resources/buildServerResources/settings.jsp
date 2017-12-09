@@ -113,7 +113,7 @@
                     <select name="${cons.machineType}" class="longField ignoreModified"
                             data-bind="options: machineTypes, optionsText: 'text', optionsValue: 'id',
                              value: image().machineType"></select>
-                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
+                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
             <tr>
@@ -122,7 +122,7 @@
                     <select name="${cons.diskType}" class="longField ignoreModified"
                             data-bind="options: diskTypes, optionsText: 'text', optionsValue: 'id',
                              value: image().diskType, optionsCaption: '<Not specified>'"></select>
-                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
+                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
             <tr>
@@ -142,9 +142,18 @@
                             data-bind="options: networks, optionsText: 'text', optionsValue: 'id',
                              value: image().network, css: {hidden: networks().length == 0}"></select>
                     <div class="longField inline-block" data-bind="css: {hidden: networks().length > 0}">
-                        <span class="error option-error">No networks found in the project</span>
+                        <span class="error option-error">No networks found in <span data-bind="text: image().zone"></span> zone</span>
                     </div>
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
+                </td>
+            </tr>
+            <tr>
+                <th class="noBorder"><label for="${cons.subnet}">Sub Network:</label></th>
+                <td>
+                    <select name="${cons.subnet}" class="longField ignoreModified"
+                            data-bind="options: subnets, optionsText: 'text', optionsValue: 'id',
+                             optionsCaption: '<Not specified>', value: image().subnet"></select>
+                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
             <tr class="advancedSetting">

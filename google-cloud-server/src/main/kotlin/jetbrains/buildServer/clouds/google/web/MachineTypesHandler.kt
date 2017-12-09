@@ -16,6 +16,7 @@
 
 package jetbrains.buildServer.clouds.google.web
 
+import jetbrains.buildServer.clouds.google.GoogleConstants
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
@@ -26,7 +27,8 @@ import org.jdom.Element
  */
 internal class MachineTypesHandler : GoogleResourceHandler() {
     override fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = async(CommonPool) {
-        val machineTypes = connector.getMachineTypesAsync().await()
+        val zone = parameters[GoogleConstants.ZONE]!!
+        val machineTypes = connector.getMachineTypesAsync(zone).await()
         val machineTypesElement = Element("machineTypes")
 
         for ((id, displayName) in machineTypes) {

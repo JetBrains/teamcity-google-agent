@@ -38,11 +38,13 @@ interface GoogleApiConnector : CloudApiConnector<GoogleCloudImage, GoogleCloudIn
 
     fun getImagesAsync(): Deferred<Map<String, String>>
 
-    fun getZonesAsync(): Deferred<Map<String, String>>
+    fun getZonesAsync(): Deferred<Map<String, List<String>>>
 
-    fun getMachineTypesAsync(): Deferred<Map<String, String>>
+    fun getMachineTypesAsync(zone: String): Deferred<Map<String, String>>
 
     fun getNetworksAsync(): Deferred<Map<String, String>>
 
-    fun getDiskTypesAsync(): Deferred<Map<String, String>>
+    fun getSubnetsAsync(region: String): Deferred<Map<String, List<String>>>
+
+    fun getDiskTypesAsync(zone: String): Deferred<Map<String, String>>
 }
