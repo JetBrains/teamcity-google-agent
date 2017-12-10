@@ -327,7 +327,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             subnets = [{id: subnet, text: subnet}];
         }
 
-        self.subnets(subnets);
+        self.subnets(subnets || []);
     }
 
     function loadInfoByZone(zoneId) {
@@ -362,6 +362,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             self.machineTypes(getMachineTypes($response));
             self.diskTypes(getDiskTypes($response));
             getSubnets($response);
+            changeSubnets(self.image().network())
         }, function (error) {
             self.errorResources("Failed to load data: " + error.message);
             console.log(error);

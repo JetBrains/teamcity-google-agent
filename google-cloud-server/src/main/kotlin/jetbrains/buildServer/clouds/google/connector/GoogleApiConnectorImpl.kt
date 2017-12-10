@@ -148,42 +148,42 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
 
     override fun getImagesAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listImages().iterateAll()
-                .map { it.imageId.image to (it.description ?: it.imageId.image) }
+                .map { it.imageId.image to nonEmpty(it.description, it.imageId.image) }
                 .sortedWith(compareBy(comparator, { it -> it.second }))
                 .associate { it -> it.first to it.second }
     }
 
     override fun getZonesAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listZones().iterateAll()
-                .map { it -> it.zoneId.zone to listOf<String>((it.description ?: it.zoneId.zone), it.region.region) }
+                .map { it -> it.zoneId.zone to listOf<String>(nonEmpty(it.description, it.zoneId.zone), it.region.region) }
                 .sortedWith(compareBy(comparator, { it -> it.second.first() }))
                 .associate { it -> it.first to it.second }
     }
 
     override fun getMachineTypesAsync(zone: String) = async(CommonPool, CoroutineStart.LAZY) {
         compute.listMachineTypes(zone).iterateAll()
-                .map { it -> it.machineTypeId.type to (it.description ?: it.machineTypeId.type) }
+                .map { it -> it.machineTypeId.type to nonEmpty(it.description, it.machineTypeId.type) }
                 .sortedWith(compareBy(comparator, { it -> it.second }))
                 .associate { it -> it.first to it.second }
     }
 
     override fun getNetworksAsync() = async(CommonPool, CoroutineStart.LAZY) {
         compute.listNetworks().iterateAll()
-                .map { it -> it.networkId.network to (it.description ?: it.networkId.network) }
+                .map { it -> it.networkId.network to nonEmpty(it.description, it.networkId.network) }
                 .sortedWith(compareBy(comparator, { it -> it.second }))
                 .associate { it -> it.first to it.second }
     }
 
     override fun getSubnetsAsync(region: String) = async(CommonPool, CoroutineStart.LAZY) {
         compute.listSubnetworks(region).iterateAll()
-                .map { it -> it.subnetworkId.subnetwork to listOf((it.description ?: it.subnetworkId.subnetwork), it.network.network) }
+                .map { it -> it.subnetworkId.subnetwork to listOf(nonEmpty(it.description, it.subnetworkId.subnetwork), it.network.network) }
                 .sortedWith(compareBy(comparator, { it -> it.second.first() }))
                 .associate { it -> it.first to it.second }
     }
 
     override fun getDiskTypesAsync(zone: String) = async(CommonPool, CoroutineStart.LAZY) {
         compute.listDiskTypes(zone).iterateAll()
-                .map { it -> it.diskTypeId.type to (it.description ?: it.diskTypeId.type) }
+                .map { it -> it.diskTypeId.type to nonEmpty(it.description, it.diskTypeId.type) }
                 .sortedWith(compareBy(comparator, { it -> it.second }))
                 .associate { it -> it.first to it.second }
     }
@@ -232,6 +232,14 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
                 "compute.machineTypes.list",
                 "compute.networks.list",
                 "compute.zones.list")
+
         val regionByZone: ConcurrentHashMap<String, String> = ConcurrentHashMap()
+
+        private fun nonEmpty(string: String?, defaultValue: String): String {
+            string?.let {
+                if (it.isNotBlank()) return it
+            }
+            return defaultValue
+        }
     }
 }

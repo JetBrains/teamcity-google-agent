@@ -33,7 +33,7 @@ internal class ZonesHandler : GoogleResourceHandler() {
             zonesElement.addContent(Element("zone").apply {
                 setAttribute("id", id)
                 setAttribute("region", props[1])
-                text = props[1]
+                text = props[0]
             })
         }
 

@@ -32,7 +32,7 @@ internal class ImagesHandler : GoogleResourceHandler() {
         for ((id, displayName) in images) {
             imagesElement.addContent(Element("image").apply {
                 setAttribute("id", id)
-                text = if (displayName.isEmpty()) id else displayName
+                text = displayName
             })
         }
 
