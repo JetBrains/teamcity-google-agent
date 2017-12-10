@@ -16,7 +16,7 @@
     BS.LoadStyleSheetDynamically("<c:url value='${resPath}settings.css'/>");
 </script>
 
-<div id="google-setting" data-bind="validationOptions: {insertMessages: false}, template: { afterRender: afterRender }">
+<div id="google-setting" data-bind="template: { afterRender: afterRender }">
 
     <table class="runnerFormTable">
         <tr>
@@ -50,14 +50,15 @@
                                     urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_short_product_name_roles"
                                     file=""/><br/>
                     To verify permissions please enable
-                    <a href="https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview" target="_blank">Google Cloud Resource Manager API</a>.
+                    <a href="https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview"
+                       target="_blank">Google Cloud Resource Manager API</a>.
                 </span>
                 <span class="error option-error" data-bind="validationMessage: credentials().accessKey"></span>
             </td>
         </tr>
         <tr>
             <td colspan="2">
-                <span data-bind="css: {hidden: !loadingResources()}"><i class="icon-refresh icon-spin"></i> Loading service data...</span>
+                <span data-bind="css: {hidden: !loadingResources() && !validatingKey()}"><i class="icon-refresh icon-spin"></i> Loading service data...</span>
                 <span class="error option-error"
                       data-bind="text: errorResources, css: {hidden: loadingResources}"></span>
             </td>
@@ -99,21 +100,54 @@
             <tr>
                 <th><label for="${cons.maxInstancesCount}">Instances limit: <l:star/></label></th>
                 <td>
-                    <div>
-                        <input type="text" name="${cons.maxInstancesCount}" class="longField ignoreModified"
-                               data-bind="textInput: image().maxInstances"/>
-                        <span class="smallNote">Maximum number of instances which can be started</span>
-                        <span class="error option-error" data-bind="validationMessage: image().maxInstances"></span>
-                    </div>
+                    <input type="text" name="${cons.maxInstancesCount}" class="longField ignoreModified"
+                           data-bind="textInput: image().maxInstances"/>
+                    <span class="smallNote">Maximum number of instances which can be started</span>
+                    <span class="error option-error" data-bind="validationMessage: image().maxInstances"></span>
                 </td>
             </tr>
             <tr>
-                <th><label for="${cons.machineType}">Machine type: <l:star/></label></th>
+                <th><label for="${cons.machineType}">Machine type:</label></th>
+                <td>
+                    <input type="checkbox" name="${cons.machineCustom}" class="ignoreModified"
+                           data-bind="checked: image().machineCustom"/>
+                    <label for="${cons.machineCustom}">Customize machine type
+                        <bs:help file=""
+                                urlPrefix="https://cloud.google.com/compute/docs/instances/creating-instance-with-custom-machine-type"/>
+                    </label><br/>
+                </td>
+            </tr>
+            <tr data-bind="ifnot: image().machineCustom">
+                <th class="noBorder"></th>
                 <td>
                     <select name="${cons.machineType}" class="longField ignoreModified"
                             data-bind="options: machineTypes, optionsText: 'text', optionsValue: 'id',
                              value: image().machineType"></select>
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
+                </td>
+            </tr>
+            <tr data-bind="if: image().machineCustom">
+                <th class="noBorder">Cores: <l:star/></th>
+                <td>
+                    <input type="text" name="${cons.machineCores}" class="longField ignoreModified"
+                           data-bind="textInput: image().machineCores"/>
+                    <span class="error option-error" data-bind="validationMessage: image().machineCores"></span>
+                </td>
+            </tr>
+            <tr data-bind="if: image().machineCustom">
+                <th class="noBorder">Memory in MB: <l:star/></th>
+                <td>
+                    <input type="text" name="${cons.machineMemory}" class="longField ignoreModified"
+                           data-bind="textInput: image().machineMemory"/>
+                    <span class="error option-error" data-bind="validationMessage: image().machineMemory"></span>
+                </td>
+            </tr>
+            <tr data-bind="if: image().machineCustom">
+                <th class="noBorder"></th>
+                <td>
+                    <input type="checkbox" name="${cons.machineMemoryExt}" class="ignoreModified"
+                           data-bind="checked: image().machineMemoryExt"/>
+                    <label for="${cons.machineMemoryExt}">Extend maximum memory per vCPU</label>
                 </td>
             </tr>
             <tr>
@@ -142,7 +176,8 @@
                             data-bind="options: networks, optionsText: 'text', optionsValue: 'id',
                              value: image().network, css: {hidden: networks().length == 0}"></select>
                     <div class="longField inline-block" data-bind="css: {hidden: networks().length > 0}">
-                        <span class="error option-error">No networks found in <span data-bind="text: image().zone"></span> zone</span>
+                        <span class="error option-error">No networks found in <span
+                                data-bind="text: image().zone"></span> zone</span>
                     </div>
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
                 </td>
@@ -198,7 +233,7 @@
                     <td class="center edit" data-bind="text: maxInstances"></td>
                     <td class="edit">
                         <a href="#" data-bind="click: $parent.showDialog,
-                        css: {hidden: !$parent.isValidCredentials() || $parent.loadingResources()}">Edit</a>
+                        css: {hidden: !$parent.isValidCredentials() || $parent.loadingResources() || $parent.validatingKey()}">Edit</a>
                     </td>
                     <td class="remove edit"><a href="#" data-bind="click: $parent.deleteImage">Delete</a></td>
                 </tr>
@@ -240,6 +275,7 @@
         $j.getScript("<c:url value="${resPath}images.vm.js"/>")
     ).then(function () {
         var dialog = document.getElementById("google-setting");
+        ko.validation.init({insertMessages: false});
         ko.applyBindings(new GoogleImagesViewModel($j, ko, BS.GoogleImageDialog, {
             baseUrl: "<c:url value='${basePath}'/>",
             projectId: "${projectId}"

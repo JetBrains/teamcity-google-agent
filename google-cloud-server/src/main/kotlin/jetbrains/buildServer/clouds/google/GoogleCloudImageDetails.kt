@@ -35,8 +35,16 @@ class GoogleCloudImageDetails(
         val network: String?,
         @SerializedName(GoogleConstants.SUBNET_ID)
         val subnet: String?,
+        @SerializedName(GoogleConstants.MACHINE_CUSTOM)
+        val machineCustom: Boolean = false,
         @SerializedName(GoogleConstants.MACHINE_TYPE)
-        val machineType: String,
+        val machineType: String?,
+        @SerializedName(GoogleConstants.MACHINE_CORES)
+        val machineCores: String?,
+        @SerializedName(GoogleConstants.MACHINE_MEMORY)
+        val machineMemory: String?,
+        @SerializedName(GoogleConstants.MACHINE_MEMORY_EXT)
+        val machineMemoryExt: Boolean = false,
         @SerializedName(GoogleConstants.MAX_INSTANCES_COUNT)
         private val maxInstances: Int,
         @SerializedName(CloudImageParameters.AGENT_POOL_ID_FIELD)

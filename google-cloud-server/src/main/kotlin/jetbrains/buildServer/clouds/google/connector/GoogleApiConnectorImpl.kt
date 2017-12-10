@@ -67,7 +67,6 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
     override fun createVmAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = async(CommonPool, CoroutineStart.LAZY) {
         val details = instance.image.imageDetails
         val zone = details.zone
-        val machineType = details.machineType
         val network = details.network ?: "default"
 
         val imageId = ImageId.of(myProjectId, details.sourceImage)
@@ -91,6 +90,9 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
                 }
                 .build()
         val instanceId = InstanceId.of(zone, instance.instanceId)
+        val machineType = if (details.machineCustom) {
+            "custom-${details.machineCores}-${details.machineMemory}${if (details.machineMemoryExt) "-ext" else ""}"
+        } else details.machineType!!
         val machineTypeId = MachineTypeId.of(zone, machineType)
         val instanceInfo = InstanceInfo.newBuilder(instanceId, machineTypeId)
                 .setAttachedDisks(listOf(attachedDisk))

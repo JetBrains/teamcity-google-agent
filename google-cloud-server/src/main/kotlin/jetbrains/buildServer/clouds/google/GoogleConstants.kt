@@ -42,8 +42,20 @@ class GoogleConstants {
     val subnet: String
         get() = SUBNET_ID
 
+    val machineCustom: String
+        get() = MACHINE_CUSTOM
+
     val machineType: String
         get() = MACHINE_TYPE
+
+    val machineCores: String
+        get() = MACHINE_CORES
+
+    val machineMemory: String
+        get() = MACHINE_MEMORY
+
+    val machineMemoryExt: String
+        get() = MACHINE_MEMORY_EXT
 
     val diskType: String
         get() = DISK_TYPE
@@ -68,7 +80,11 @@ class GoogleConstants {
         const val NETWORK_ID = "network"
         const val SUBNET_ID = "subnet"
         const val MAX_INSTANCES_COUNT = "maxInstances"
+        const val MACHINE_CUSTOM = "machineCustom"
         const val MACHINE_TYPE = "machineType"
+        const val MACHINE_CORES = "machineCores"
+        const val MACHINE_MEMORY = "machineMemory"
+        const val MACHINE_MEMORY_EXT = "machineMemoryExt"
         const val DISK_TYPE = "diskType"
         const val TAG_SERVER = "teamcityServer"
         const val TAG_DATA = "teamcityData"

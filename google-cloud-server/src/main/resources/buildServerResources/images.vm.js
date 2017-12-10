@@ -60,14 +60,40 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     // Image details
     var maxLength = 60;
+    self.machineCustom = ko.observable(false);
     self.image = ko.validatedObservable({
         sourceImage: ko.observable().extend({required: true}),
         zone: ko.observable().extend({required: true}),
         network: ko.observable().extend({required: true}),
         subnet: ko.observable(),
-        maxInstances: ko.observable(1).extend({required: true, min: 1}),
+        maxInstances: ko.observable(1).extend({required: true, min: 0}),
         preemptible: ko.observable(false),
-        machineType: ko.observable().extend({required: true}),
+        machineCustom: self.machineCustom,
+        machineType: ko.observable(),
+        machineCores: ko.observable().extend({
+            validation: {
+                validator: function (value) {
+                    var number = parseInt(value);
+                    return number > 0 && (number === 1 || (number % 2 === 0));
+                },
+                message: "1 or an even number of vCPUs can be created",
+                onlyIf: function() {
+                    return self.machineCustom() === true;
+                }
+            }
+        }),
+        machineMemory: ko.observable().extend({
+            validation: {
+                validator: function (value) {
+                    return value > 900 && (value % 256 === 0);
+                },
+                message: "Total memory must be a multiple of 256 MB",
+                onlyIf: function() {
+                    return self.machineCustom() === true;
+                }
+            }
+        }),
+        machineMemoryExt: ko.observable(false),
         diskType: ko.observable(),
         vmNamePrefix: ko.observable('').trimmed().extend({required: true, maxLength: maxLength}).extend({
             validation: {
@@ -138,6 +164,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         var images = ko.utils.parseJson(data || "[]");
         images.forEach(function (image) {
             image.preemptible = getBoolean(image.preemptible);
+            image.machineCustom = getBoolean(image.machineCustom);
+            image.machineMemoryExt = getBoolean(image.machineMemoryExt);
         });
         self.images(images);
     });
@@ -149,7 +177,11 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         self.originalImage = data;
 
         var model = self.image();
-        var image = data || {maxInstances: 1, preemptible: false};
+        var image = data || {
+            maxInstances: 1,
+            preemptible: false,
+            machineCustom: false
+        };
 
         var sourceImage = image.sourceImage;
         if (sourceImage && !ko.utils.arrayFirst(self.sourceImages(), function (item) {
@@ -185,7 +217,11 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         var subnet = image.subnet;
         changeSubnets(network, subnet);
         model.subnet(subnet);
+        model.machineCustom(image.machineCustom || false);
         model.machineType(machineType);
+        model.machineCores(image.machineCores);
+        model.machineMemory(image.machineMemory);
+        model.machineMemoryExt(image.machineMemoryExt);
         model.diskType(diskType);
         model.maxInstances(image.maxInstances);
         model.preemptible(image.preemptible);
@@ -214,7 +250,11 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             maxInstances: model.maxInstances(),
             preemptible: model.preemptible(),
             'source-id': model.vmNamePrefix(),
+            machineCustom: model.machineCustom(),
             machineType: model.machineType(),
+            machineCores: model.machineCores(),
+            machineMemory: model.machineMemory(),
+            machineMemoryExt: model.machineMemoryExt(),
             diskType: model.diskType(),
             agent_pool_id: model.agentPoolId(),
             profileId: model.profileId()
