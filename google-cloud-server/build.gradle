@@ -19,7 +19,7 @@ dependencies {
     server project(':google-cloud-server-base')
     provided project(':google-cloud-server-base')
 
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
     compile "com.google.cloud:google-cloud-compute:$google_sdk"
     compile "com.google.cloud:google-cloud-resourcemanager:$google_sdk"
@@ -31,7 +31,10 @@ serverPlugin.version = null
 serverPlugin.baseName = 'cloud-google'
 
 compileKotlin {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
     kotlinOptions {
-        jvmTarget = 1.8
+        jvmTarget = '1.8'
     }
 }
