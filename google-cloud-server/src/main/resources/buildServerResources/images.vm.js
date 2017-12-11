@@ -111,6 +111,38 @@ function GoogleImagesViewModel($, ko, dialog, config) {
                 params: /^[a-z][a-z0-9_-]*$/i
             }
         }),
+        metadata: ko.observable().extend({
+            validation: {
+                validator: function (value) {
+                    if (!value) return true;
+
+                    var root;
+                    try {
+                        root = JSON.parse(value);
+                    } catch (error) {
+                        console.log("Unable to parse metadata: " + error);
+                        return false;
+                    }
+
+                    for (var key in root) {
+                        if (root.hasOwnProperty(key)) {
+                            if ("object" === typeof(key)) {
+                                console.log("Invalid key: " + key);
+                                return false;
+                            }
+
+                            if ("object" === typeof(root[key])) {
+                                console.log("Invalid value for key: " + key);
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
+                },
+                message: "Invalid metadata value"
+            }
+        }),
         agentPoolId: ko.observable().extend({required: true}),
         profileId: ko.observable()
     });
@@ -226,6 +258,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         model.maxInstances(image.maxInstances);
         model.preemptible(image.preemptible);
         model.vmNamePrefix(image['source-id']);
+        model.metadata(image.metadata);
         model.agentPoolId(image.agent_pool_id);
         model.profileId(image.profileId);
 
@@ -256,6 +289,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             machineMemory: model.machineMemory(),
             machineMemoryExt: model.machineMemoryExt(),
             diskType: model.diskType(),
+            metadata: model.metadata(),
             agent_pool_id: model.agentPoolId(),
             profileId: model.profileId()
         };

@@ -72,6 +72,9 @@ class GoogleConstants {
     val preemptible: String
         get() = PREEMPTIBLE
 
+    val metadata: String
+        get() = METADATA
+
     companion object {
         const val ACCESS_KEY = Constants.SECURE_PROPERTY_PREFIX + "accessKey"
         const val SOURCE_IMAGE = "sourceImage"
@@ -92,5 +95,6 @@ class GoogleConstants {
         const val TAG_SOURCE = "teamcitySource"
         const val PROFILE_ID = "profileId"
         const val PREEMPTIBLE = "preemptible"
+        const val METADATA = "metadata"
     }
 }

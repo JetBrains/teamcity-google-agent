@@ -80,7 +80,8 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
                     it.agentPoolId,
                     it.getParameter(GoogleConstants.PROFILE_ID)!!,
                     (it.getParameter(GoogleConstants.PREEMPTIBLE) ?: "").toBoolean(),
-                    it.getParameter(GoogleConstants.DISK_TYPE)
+                    it.getParameter(GoogleConstants.DISK_TYPE),
+                    it.getParameter(GoogleConstants.METADATA)
             )
         }
     }

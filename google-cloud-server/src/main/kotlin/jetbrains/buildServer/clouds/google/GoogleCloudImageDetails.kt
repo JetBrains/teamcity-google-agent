@@ -54,7 +54,9 @@ class GoogleCloudImageDetails(
         @SerializedName(GoogleConstants.PREEMPTIBLE)
         val preemptible: Boolean = false,
         @SerializedName(GoogleConstants.DISK_TYPE)
-        val diskType: String?) : CloudImageDetails {
+        val diskType: String?,
+        @SerializedName(GoogleConstants.METADATA)
+        val metadata: String?) : CloudImageDetails {
 
     override fun getSourceId(): String {
         return sourceId

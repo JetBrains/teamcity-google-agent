@@ -151,15 +151,6 @@
                 </td>
             </tr>
             <tr>
-                <th><label for="${cons.diskType}">Disk type:</label></th>
-                <td>
-                    <select name="${cons.diskType}" class="longField ignoreModified"
-                            data-bind="options: diskTypes, optionsText: 'text', optionsValue: 'id',
-                             value: image().diskType, optionsCaption: '<Not specified>'"></select>
-                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
-                </td>
-            </tr>
-            <tr>
                 <th class="noBorder"></th>
                 <td>
                     <input type="checkbox" name="${cons.preemptible}" class="ignoreModified"
@@ -167,6 +158,15 @@
                     <label for="${cons.preemptible}">Use preemptible VM Instances
                         <bs:help urlPrefix="https://cloud.google.com/preemptible-vms/" file=""/>
                     </label>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="${cons.diskType}">Disk type:</label></th>
+                <td>
+                    <select name="${cons.diskType}" class="longField ignoreModified"
+                            data-bind="options: diskTypes, optionsText: 'text', optionsValue: 'id',
+                             value: image().diskType, optionsCaption: '<Not specified>'"></select>
+                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
             <tr>
@@ -189,6 +189,18 @@
                             data-bind="options: subnets, optionsText: 'text', optionsValue: 'id',
                              optionsCaption: '<Not specified>', value: image().subnet"></select>
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="${cons.metadata}">Custom metadata:</label></th>
+                <td>
+                    <textarea name="${cons.metadata}" class="longField ignoreModified"
+                              rows="3" cols="49"
+                              data-bind="textInput: image().metadata"></textarea>
+                    <span class="smallNote">Specify the instance metadata in JSON format.
+                        <bs:help urlPrefix="https://cloud.google.com/compute/docs/storing-retrieving-metadata#default" file=""/>
+                    </span>
+                    <span class="error option-error" data-bind="validationMessage: image().metadata"></span>
                 </td>
             </tr>
             <tr class="advancedSetting">

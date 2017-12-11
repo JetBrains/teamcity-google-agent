@@ -6,6 +6,7 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.compute.*
 import com.google.cloud.compute.NetworkId
 import com.google.cloud.resourcemanager.ResourceManagerOptions
+import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.clouds.CloudException
 import jetbrains.buildServer.clouds.CloudInstanceUserData
 import jetbrains.buildServer.clouds.base.connector.AbstractInstance
@@ -97,12 +98,35 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
         val instanceInfo = InstanceInfo.newBuilder(instanceId, machineTypeId)
                 .setAttachedDisks(listOf(attachedDisk))
                 .setNetworkInterfaces(listOf(networkInterface))
-                .setMetadata(Metadata.of(mapOf(
+                .setMetadata(Metadata.of(mutableMapOf(
                         GoogleConstants.TAG_SERVER to myServerId,
                         GoogleConstants.TAG_DATA to userData.serialize(),
                         GoogleConstants.TAG_PROFILE to myProfileId,
                         GoogleConstants.TAG_SOURCE to details.sourceId
-                )))
+                ).apply {
+                    details.metadata?.let {
+                        if (it.isBlank()) {
+                            return@let
+                        }
+
+                        val factory = Utils.getDefaultJsonFactory()
+                        val parser = factory.createJsonParser(it)
+                        val json = try {
+                             parser.parse(GenericJson::class.java)
+                        } catch (e: Exception) {
+                            LOG.warn("Invalid JSON metadata $it", e)
+                            return@let
+                        }
+
+                        json.forEach { key, value ->
+                            if (value is String) {
+                                this[key] = value
+                            } else {
+                                LOG.warn("Invalid value for metadata key $key")
+                            }
+                        }
+                    }
+                }))
                 .apply {
                     if (details.preemptible) {
                         setSchedulingOptions(SchedulingOptions.preemptible())
@@ -224,6 +248,8 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
     }
 
     companion object {
+        private val LOG = Logger.getInstance(GoogleApiConnectorImpl::class.java.name)
+
         val REQUIRED_PERMISSIONS = listOf(
                 "compute.images.list",
                 "compute.instances.create",
