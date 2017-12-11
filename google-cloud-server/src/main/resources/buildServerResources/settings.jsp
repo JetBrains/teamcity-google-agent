@@ -151,7 +151,7 @@
                 </td>
             </tr>
             <tr>
-                <th><label for="${cons.diskType}">Disk type: <l:star/></label></th>
+                <th><label for="${cons.diskType}">Disk type:</label></th>
                 <td>
                     <select name="${cons.diskType}" class="longField ignoreModified"
                             data-bind="options: diskTypes, optionsText: 'text', optionsValue: 'id',
