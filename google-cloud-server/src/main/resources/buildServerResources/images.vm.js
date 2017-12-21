@@ -143,6 +143,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
                 message: "Invalid metadata value"
             }
         }),
+        growingId: ko.observable(false),
         agentPoolId: ko.observable().extend({required: true}),
         profileId: ko.observable()
     });
@@ -198,6 +199,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             image.preemptible = getBoolean(image.preemptible);
             image.machineCustom = getBoolean(image.machineCustom);
             image.machineMemoryExt = getBoolean(image.machineMemoryExt);
+            image.growingId = getBoolean(image.growingId);
         });
         self.images(images);
     });
@@ -212,7 +214,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         var image = data || {
             maxInstances: 1,
             preemptible: false,
-            machineCustom: false
+            machineCustom: false,
+            growingId: false
         };
 
         var sourceImage = image.sourceImage;
@@ -259,6 +262,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         model.preemptible(image.preemptible);
         model.vmNamePrefix(image['source-id']);
         model.metadata(image.metadata);
+        model.growingId(image.growingId);
         model.agentPoolId(image.agent_pool_id);
         model.profileId(image.profileId);
 
@@ -290,6 +294,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             machineMemoryExt: model.machineMemoryExt(),
             diskType: model.diskType(),
             metadata: model.metadata(),
+            growingId: model.growingId(),
             agent_pool_id: model.agentPoolId(),
             profileId: model.profileId()
         };

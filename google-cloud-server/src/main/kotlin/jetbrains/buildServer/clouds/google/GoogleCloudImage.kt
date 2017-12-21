@@ -24,6 +24,7 @@ import jetbrains.buildServer.clouds.base.AbstractCloudImage
 import jetbrains.buildServer.clouds.base.connector.AbstractInstance
 import jetbrains.buildServer.clouds.base.errors.TypedCloudErrorInfo
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
+import jetbrains.buildServer.clouds.google.utils.IdProvider
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
@@ -32,7 +33,8 @@ import kotlinx.coroutines.experimental.runBlocking
  * Google cloud image.
  */
 class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageDetails,
-                                   private val myApiConnector: GoogleApiConnector)
+                                   private val myApiConnector: GoogleApiConnector,
+                                   private val myIdProvider: IdProvider)
     : AbstractCloudImage<GoogleCloudInstance, GoogleCloudImageDetails>(myImageDetails.sourceId, myImageDetails.sourceId) {
 
     override fun getImageDetails(): GoogleCloudImageDetails {
@@ -141,13 +143,18 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
     }
 
     private fun getInstanceName(): String {
-        val keys = instances.map { it.instanceId.toLowerCase() }
         val sourceName = myImageDetails.sourceId.toLowerCase()
-        var i: Int = 1
 
-        while (keys.contains(sourceName + i)) i++
+        val id = if (imageDetails.growingId) {
+            myIdProvider.nextId
+        } else {
+            val keys = instances.map { it.instanceId.toLowerCase() }
+            var i = 1
+            while (keys.contains(sourceName + i)) i++
+            i
+        }
 
-        return sourceName + i
+        return sourceName + id
     }
 
     /**

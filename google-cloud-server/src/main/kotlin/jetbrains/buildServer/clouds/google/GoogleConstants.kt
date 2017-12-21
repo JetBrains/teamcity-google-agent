@@ -75,6 +75,9 @@ class GoogleConstants {
     val metadata: String
         get() = METADATA
 
+    val growingId: String
+        get() = GROWING_ID
+
     companion object {
         const val ACCESS_KEY = Constants.SECURE_PROPERTY_PREFIX + "accessKey"
         const val SOURCE_IMAGE = "sourceImage"
@@ -96,5 +99,6 @@ class GoogleConstants {
         const val PROFILE_ID = "profileId"
         const val PREEMPTIBLE = "preemptible"
         const val METADATA = "metadata"
+        const val GROWING_ID = "growingId"
     }
 }

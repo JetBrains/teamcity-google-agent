@@ -22,18 +22,29 @@ import jetbrains.buildServer.clouds.base.errors.TypedCloudErrorInfo
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnectorImpl
 import jetbrains.buildServer.serverSide.AgentDescription
 import jetbrains.buildServer.serverSide.PropertiesProcessor
+import jetbrains.buildServer.serverSide.ServerPaths
 import jetbrains.buildServer.serverSide.ServerSettings
 import jetbrains.buildServer.web.openapi.PluginDescriptor
+import java.io.File
 import java.util.*
 
 /**
  * Constructs Google cloud clients.
  */
 class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
+                               serverPaths: ServerPaths,
                                private val myPluginDescriptor: PluginDescriptor,
                                private val mySettings: ServerSettings,
                                private val myImagesHolder: GoogleCloudImagesHolder)
     : AbstractCloudClientFactory<GoogleCloudImageDetails, GoogleCloudClient>(cloudRegistrar) {
+
+    private val myGoogleStorage: File = File(serverPaths.pluginDataDirectory, "googleIdx")
+
+    init {
+        if (!myGoogleStorage.exists()) {
+            myGoogleStorage.mkdirs()
+        }
+    }
 
     override fun createNewClient(state: CloudState,
                                  images: Collection<GoogleCloudImageDetails>,
@@ -49,7 +60,7 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
         apiConnector.setServerId(mySettings.serverUUID)
         apiConnector.setProfileId(state.profileId)
 
-        val cloudClient = GoogleCloudClient(params, apiConnector, myImagesHolder)
+        val cloudClient = GoogleCloudClient(params, apiConnector, myImagesHolder, myGoogleStorage)
         cloudClient.updateErrors(*errors)
 
         return cloudClient
@@ -81,7 +92,8 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
                     it.getParameter(GoogleConstants.PROFILE_ID)!!,
                     (it.getParameter(GoogleConstants.PREEMPTIBLE) ?: "").toBoolean(),
                     it.getParameter(GoogleConstants.DISK_TYPE),
-                    it.getParameter(GoogleConstants.METADATA)
+                    it.getParameter(GoogleConstants.METADATA),
+                    (it.getParameter(GoogleConstants.GROWING_ID) ?: "").toBoolean()
             )
         }
     }

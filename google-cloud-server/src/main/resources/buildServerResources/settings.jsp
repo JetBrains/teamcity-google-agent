@@ -98,6 +98,14 @@
                 </td>
             </tr>
             <tr>
+                <th class="noBorder"></th>
+                <td>
+                    <input type="checkbox" name="${cons.growingId}" class="ignoreModified"
+                           data-bind="checked: image().growingId"/>
+                    <label for="${cons.growingId}">Use constantly growing id as a suffix</label>
+                </td>
+            </tr>
+            <tr>
                 <th><label for="${cons.maxInstancesCount}">Instances limit: <l:star/></label></th>
                 <td>
                     <input type="text" name="${cons.maxInstancesCount}" class="longField ignoreModified"
