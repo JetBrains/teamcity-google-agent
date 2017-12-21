@@ -226,16 +226,24 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
             !values[GoogleConstants.TAG_SOURCE].isNullOrEmpty()
         }.groupBy { it.metadata.values[GoogleConstants.TAG_SOURCE] }
         val result = hashMapOf<GoogleCloudImage, MutableMap<String, R>>()
+
         for (image in images) {
             val instances = hashMapOf<String, R>()
             map[image.imageDetails.sourceId]?.let {
                 it.forEach {
                     @Suppress("UNCHECKED_CAST")
                     instances[it.instanceId.instance] = GoogleInstance(it) as R
+
+                    if (it.status == InstanceInfo.Status.TERMINATED) {
+                        async(CommonPool) {
+                            it.delete()
+                        }
+                    }
                 }
             }
             result[image] = instances
         }
+
         return result
     }
 
