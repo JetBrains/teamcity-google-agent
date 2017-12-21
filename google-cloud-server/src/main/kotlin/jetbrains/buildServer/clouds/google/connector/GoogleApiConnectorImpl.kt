@@ -231,12 +231,18 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
             val instances = hashMapOf<String, R>()
             map[image.imageDetails.sourceId]?.let {
                 it.forEach {
+                    val name = it.instanceId.instance
                     @Suppress("UNCHECKED_CAST")
-                    instances[it.instanceId.instance] = GoogleInstance(it) as R
+                    instances[name] = GoogleInstance(it) as R
 
                     if (it.status == InstanceInfo.Status.TERMINATED) {
                         async(CommonPool) {
-                            it.delete()
+                            try {
+                                LOG.info("Removing terminated instance $name")
+                                it.delete()
+                            } catch (e: Exception) {
+                                LOG.info("Failed to remove instance $name: $e")
+                            }
                         }
                     }
                 }
