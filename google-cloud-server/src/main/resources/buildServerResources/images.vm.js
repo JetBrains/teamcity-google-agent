@@ -99,8 +99,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             validation: {
                 validator: function (value) {
                     return self.originalImage && self.originalImage['source-id'] === value ||
-                        self.sourceImages().every(function (image) {
-                            return image['source-id'] !== value;
+                        !ko.utils.arrayFirst(self.images(), function (image) {
+                            return image['source-id'] === value;
                         });
                 },
                 message: 'Name prefix should be unique within subscription'
