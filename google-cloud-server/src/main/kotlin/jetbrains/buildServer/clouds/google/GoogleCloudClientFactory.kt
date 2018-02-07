@@ -93,7 +93,9 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
                     (it.getParameter(GoogleConstants.PREEMPTIBLE) ?: "").toBoolean(),
                     it.getParameter(GoogleConstants.DISK_TYPE),
                     it.getParameter(GoogleConstants.METADATA),
-                    (it.getParameter(GoogleConstants.GROWING_ID) ?: "").toBoolean()
+                    (it.getParameter(GoogleConstants.GROWING_ID) ?: "").toBoolean(),
+                    it.getParameter(GoogleConstants.SERVICE_ACCOUNT),
+                    it.getParameter(GoogleConstants.SCOPES)
             )
         }
     }

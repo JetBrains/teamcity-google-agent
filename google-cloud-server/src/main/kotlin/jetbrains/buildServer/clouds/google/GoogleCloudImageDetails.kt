@@ -58,7 +58,11 @@ class GoogleCloudImageDetails(
         @SerializedName(GoogleConstants.METADATA)
         val metadata: String?,
         @SerializedName(GoogleConstants.GROWING_ID)
-        val growingId: Boolean = false) : CloudImageDetails {
+        val growingId: Boolean = false,
+        @SerializedName(GoogleConstants.SERVICE_ACCOUNT)
+        val serviceAccount: String?,
+        @SerializedName(GoogleConstants.SCOPES)
+        val scopes: String?) : CloudImageDetails {
 
     override fun getSourceId(): String {
         return sourceId

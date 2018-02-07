@@ -15,6 +15,7 @@ import jetbrains.buildServer.clouds.google.GoogleCloudImage
 import jetbrains.buildServer.clouds.google.GoogleCloudInstance
 import jetbrains.buildServer.clouds.google.GoogleConstants
 import jetbrains.buildServer.clouds.google.utils.AlphaNumericStringComparator
+import jetbrains.buildServer.util.StringUtil
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.CoroutineStart
 import kotlinx.coroutines.experimental.async
@@ -112,7 +113,7 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
                         val factory = Utils.getDefaultJsonFactory()
                         val parser = factory.createJsonParser(it)
                         val json = try {
-                             parser.parse(GenericJson::class.java)
+                            parser.parse(GenericJson::class.java)
                         } catch (e: Exception) {
                             LOG.warn("Invalid JSON metadata $it", e)
                             return@let
@@ -130,6 +131,14 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
                 .apply {
                     if (details.preemptible) {
                         setSchedulingOptions(SchedulingOptions.preemptible())
+                    }
+
+                    details.serviceAccount?.let {
+                        if (it.isBlank()) {
+                            return@let
+                        }
+                        val scopes = StringUtil.split(details.scopes ?: "https://www.googleapis.com/auth/cloud-platform")
+                        setServiceAccounts(listOf(ServiceAccount.of(it, scopes)))
                     }
                 }
                 .build()

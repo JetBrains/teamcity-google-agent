@@ -20,7 +20,9 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     self.loadingResourcesByZone = ko.observable(false);
     self.validatingKey = ko.observable(false);
     self.errorResources = ko.observable("");
-    self.isShowAccessKey = ko.observable(false);
+    self.showAccessKey = ko.observable(false);
+    self.showMetadata = ko.observable(false);
+    self.showServiceAccount = ko.observable(false);
     self.isDragOver = ko.observable(false);
     self.hasFileReader = ko.observable(typeof FileReader !== "undefined");
 
@@ -144,6 +146,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             }
         }),
         growingId: ko.observable(false),
+        serviceAccount: ko.observable(),
+        scopes: ko.observable(),
         agentPoolId: ko.observable().extend({required: true}),
         profileId: ko.observable()
     });
@@ -170,7 +174,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             return;
         }
 
-        self.isShowAccessKey(false);
+        self.showAccessKey(false);
 
         self.loadInfo();
     });
@@ -263,8 +267,13 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         model.vmNamePrefix(image['source-id']);
         model.metadata(image.metadata);
         model.growingId(image.growingId);
+        model.serviceAccount(image.serviceAccount);
+        model.scopes(image.scopes);
         model.agentPoolId(image.agent_pool_id);
         model.profileId(image.profileId);
+
+        self.showMetadata(false);
+        self.showServiceAccount(!!image.serviceAccount);
 
         self.image.errors.showAllMessages(false);
         dialog.showDialog(!self.originalImage);
@@ -295,6 +304,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             diskType: model.diskType(),
             metadata: model.metadata(),
             growingId: model.growingId(),
+            serviceAccount: model.serviceAccount(),
+            scopes: model.scopes(),
             agent_pool_id: model.agentPoolId(),
             profileId: model.profileId()
         };
@@ -409,10 +420,6 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             self.loadingResourcesByZone(false);
         });
     }
-
-    self.showAccessKey = function () {
-        self.isShowAccessKey(true);
-    };
 
     self.loadAccessKey = function (file) {
         if (!self.hasFileReader()) return;
@@ -548,7 +555,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     self.afterRender = function () {
         if (!self.credentials().accessKey()) {
-            self.isShowAccessKey(true);
+            self.showAccessKey(true);
         }
     };
 }

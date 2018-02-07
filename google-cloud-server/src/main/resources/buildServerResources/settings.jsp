@@ -22,7 +22,7 @@
         <tr>
             <th><label for="${cons.accessKey}">JSON private key: <l:star/></label></th>
             <td>
-                <div data-bind="visible: isShowAccessKey || !isValidCredentials()" style="display: none">
+                <div data-bind="visible: showAccessKey || !isValidCredentials()" style="display: none">
                     <textarea name="prop:${cons.accessKey}" class="longField"
                               rows="5" cols="49"
                               data-bind="initializeValue: credentials().accessKey,
@@ -41,13 +41,13 @@
                                data-bind="event: { change: function() { loadAccessKey($element.files[0]) } }"/>
                     </div>
                 </div>
-                <a href="#" data-bind="click: showAccessKey, visible: !isShowAccessKey()">Edit JSON key</a>
+                <a href="#" data-bind="click: function() { showAccessKey(true) }, visible: !showAccessKey()">Edit JSON key</a>
                 <span class="smallNote">Specify the JSON private key.
                     <bs:help urlPrefix="https://cloud.google.com/storage/docs/authentication#generating-a-private-key"
                              file=""/><br/>
                     You need to assign <em>Compute Engine Instance Admin (v1)</em> role
                             <bs:help
-                                    urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_short_product_name_roles"
+                                    urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_compute_engine_roles"
                                     file=""/><br/>
                     To verify permissions please enable
                     <a href="https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview"
@@ -168,7 +168,7 @@
                     </label>
                 </td>
             </tr>
-            <tr>
+            <tr class="advancedSetting">
                 <th><label for="${cons.diskType}">Disk type:</label></th>
                 <td>
                     <select name="${cons.diskType}" class="longField ignoreModified"
@@ -191,7 +191,7 @@
                 </td>
             </tr>
             <tr>
-                <th class="noBorder"><label for="${cons.subnet}">Sub Network:</label></th>
+                <th class="noBorder"><label for="${cons.subnet}">Sub network:</label></th>
                 <td>
                     <select name="${cons.subnet}" class="longField ignoreModified"
                             data-bind="options: subnets, optionsText: 'text', optionsValue: 'id',
@@ -199,13 +199,39 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
-            <tr>
+            <tr class="advancedSetting">
+                <th>Service account:</th>
+                <td>
+                    <a href="#" data-bind="click: function(data) { showServiceAccount(true) }, visible: !showServiceAccount()">Edit service account</a>
+                    <input type="text" name="${cons.serviceAccount}" class="longField ignoreModified"
+                           data-bind="textInput: image().serviceAccount, visible: showServiceAccount()"/>
+                    <span class="error option-error" data-bind="validationMessage: image().serviceAccount"></span>
+                    <span class="smallNote" data-bind="visible: showServiceAccount()">
+                        Specify e-mail for service account. You need to assign <em>Service Account User</em> role to account specified in cloud profile.
+                            <bs:help
+                                    urlPrefix="https://cloud.google.com/iam/docs/understanding-service-accounts"
+                                    file=""/>
+                    </span>
+                </td>
+            </tr>
+            <tr class="advancedSetting" data-bind="css: {hidden: !showServiceAccount()}">
+                <th class="noBorder">Scopes:</th>
+                <td>
+                    <input type="text" name="${cons.scopes}" class="longField ignoreModified"
+                           data-bind="textInput: image().scopes"/>
+                    <span class="error option-error" data-bind="validationMessage: image().scopes"></span>
+                    <span class="smallNote">
+                        Specify list of scopes for the service account.
+                    </span>
+                </td>
+            </tr>
+            <tr class="advancedSetting">
                 <th><label for="${cons.metadata}">Custom metadata:</label></th>
                 <td>
-                    <textarea name="${cons.metadata}" class="longField ignoreModified"
-                              rows="3" cols="49"
-                              data-bind="textInput: image().metadata"></textarea>
-                    <span class="smallNote">Specify the instance metadata in JSON format.
+                    <a href="#" data-bind="click: function(data) { showMetadata(true) }, visible: !showMetadata()">Edit metadata</a>
+                    <textarea name="${cons.metadata}" class="longField ignoreModified" rows="3" cols="49"
+                              data-bind="textInput: image().metadata, visible: showMetadata()"></textarea>
+                    <span class="smallNote" data-bind="visible: showMetadata()">Specify the instance metadata in JSON format.
                         <bs:help urlPrefix="https://cloud.google.com/compute/docs/storing-retrieving-metadata#default" file=""/>
                     </span>
                     <span class="error option-error" data-bind="validationMessage: image().metadata"></span>
