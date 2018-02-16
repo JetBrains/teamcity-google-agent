@@ -22,15 +22,18 @@ import kotlinx.coroutines.experimental.async
 import java.util.concurrent.ConcurrentHashMap
 
 
-class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector {
+class GoogleApiConnectorImpl : GoogleApiConnector {
 
     private val comparator = AlphaNumericStringComparator()
     private val compute: Compute
     private var myServerId: String? = null
     private var myProfileId: String? = null
     private var myProjectId: String? = null
+    private var myAccessKey: String? = null
 
-    init {
+    constructor(accessKey: String) {
+        myAccessKey = accessKey
+
         val builder = ComputeOptions.newBuilder()
         accessKey.trim().byteInputStream().use {
             val factory = Utils.getDefaultJsonFactory()
@@ -48,11 +51,17 @@ class GoogleApiConnectorImpl(private val accessKey: String) : GoogleApiConnector
         compute = builder.build().service
     }
 
+    constructor() {
+        compute = ComputeOptions.getDefaultInstance().service
+    }
+
     override fun test() {
         val builder = ResourceManagerOptions.newBuilder()
-        accessKey.trim().byteInputStream().use {
-            val credentials = GoogleCredentials.fromStream(it)
-            builder.setCredentials(credentials)
+        myAccessKey?.let {
+            it.trim().byteInputStream().use {
+                val credentials = GoogleCredentials.fromStream(it)
+                builder.setCredentials(credentials)
+            }
         }
 
         val resourceManager = builder.build().service

@@ -33,8 +33,13 @@ internal abstract class GoogleResourceHandler : ResourceHandler {
         PluginPropertiesUtil.bindPropertiesFromRequest(parameters, propsBean, true)
 
         val props = propsBean.properties
-        val accessKey = props[GoogleConstants.ACCESS_KEY]!!
-        val apiConnector = GoogleApiConnectorImpl(accessKey)
+        val credentialsType = props[GoogleConstants.CREDENTIALS_TYPE]
+        val apiConnector = if (credentialsType != GoogleConstants.CREDENTIALS_ENVIRONMENT) {
+            val accessKey = props[GoogleConstants.ACCESS_KEY]!!
+            GoogleApiConnectorImpl(accessKey)
+        } else {
+            GoogleApiConnectorImpl()
+        }
 
         return handle(apiConnector, parameters)
     }

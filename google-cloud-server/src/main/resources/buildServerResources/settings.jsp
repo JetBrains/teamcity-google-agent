@@ -10,8 +10,6 @@
 <jsp:useBean id="cons" class="jetbrains.buildServer.clouds.google.GoogleConstants"/>
 <jsp:useBean id="basePath" class="java.lang.String" scope="request"/>
 
-<h2 class="noBorder section-header">Cloud credentials</h2>
-
 <script type="text/javascript">
     BS.LoadStyleSheetDynamically("<c:url value='${resPath}settings.css'/>");
 </script>
@@ -19,7 +17,24 @@
 <div id="google-setting" data-bind="template: { afterRender: afterRender }">
 
     <table class="runnerFormTable">
+    <l:settingsGroup title="Security Credentials">
         <tr>
+            <th><label for="${cons.credentialsType}">Credentials type: <l:star/></label></th>
+            <td>
+                <input type="radio" name="prop:${cons.credentialsType}" value="${cons.credentialsEnvironment}"
+                       data-bind="checked: credentials().type, initializeValue: credentials().type"/>
+                <label for="${cons.credentialsEnvironment}">From machine environment</label>
+                <span class="smallNote">Use authentication from machine environment</span>
+                <br/>
+                <input type="radio" name="prop:${cons.credentialsType}" value="${cons.credentialsKey}"
+                       data-bind="checked: credentials().type"/>
+                <label for="${cons.credentialsKey}">JSON private key</label>
+                <span class="smallNote">Specify private key for service account</span>
+                <br/>
+                <a href="https://console.cloud.google.com/iam-admin/" target="_blank">Open IAM Console</a>
+            </td>
+        </tr>
+        <tr data-bind="css: {hidden: credentials().type() != '${cons.credentialsKey}' }">
             <th><label for="${cons.accessKey}">JSON private key: <l:star/></label></th>
             <td>
                 <div data-bind="visible: showAccessKey || !isValidCredentials()" style="display: none">
@@ -42,27 +57,24 @@
                     </div>
                 </div>
                 <a href="#" data-bind="click: function() { showAccessKey(true) }, visible: !showAccessKey()">Edit JSON key</a>
-                <span class="smallNote">Specify the JSON private key.
-                    <bs:help urlPrefix="https://cloud.google.com/storage/docs/authentication#generating-a-private-key"
-                             file=""/><br/>
-                    You need to assign <em>Compute Engine Instance Admin (v1)</em> role
-                            <bs:help
-                                    urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_compute_engine_roles"
-                                    file=""/><br/>
-                    To verify permissions please enable
-                    <a href="https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview"
-                       target="_blank">Google Cloud Resource Manager API</a>.
-                </span>
+                <span class="smallNote">Specify the JSON private key.</span>
                 <span class="error option-error" data-bind="validationMessage: credentials().accessKey"></span>
             </td>
         </tr>
         <tr>
             <td colspan="2">
+                <span class="smallNote">
+                    To start cloud build agents you need to assign <em>Compute Engine Instance Admin (v1)</em> role.
+                    <bs:help urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_compute_engine_roles" file=""/>
+                    To verify permissions enable <a href="https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview"
+                       target="_blank">Google Cloud Resource Manager API</a>.
+                </span>
                 <span data-bind="css: {hidden: !loadingResources() && !validatingKey()}"><i class="icon-refresh icon-spin"></i> Loading service data...</span>
                 <span class="error option-error"
                       data-bind="text: errorResources, css: {hidden: loadingResources}"></span>
             </td>
         </tr>
+    </l:settingsGroup>
     </table>
 
     <bs:dialog dialogId="GoogleImageDialog" title="Add Image" closeCommand="BS.GoogleImageDialog.close()"

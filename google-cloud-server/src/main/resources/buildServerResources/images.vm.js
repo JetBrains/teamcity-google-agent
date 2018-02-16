@@ -28,6 +28,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     // Credentials
     self.credentials = ko.validatedObservable({
+        type: ko.observable(),
         accessKey: ko.observable().extend({required: true}).extend({
             validation: {
                 async: true,
@@ -57,7 +58,11 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     });
 
     self.isValidCredentials = ko.pureComputed(function () {
-        return self.credentials().accessKey.isValid();
+        return self.credentials().type() === 'environment' || self.credentials().accessKey.isValid();
+    });
+
+    self.isValidCredentials.subscribe(function(value) {
+       if (value) self.loadInfo();
     });
 
     // Image details
@@ -175,8 +180,14 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         }
 
         self.showAccessKey(false);
+    });
 
-        self.loadInfo();
+    self.credentials().accessKey.subscribe(function (value) {
+        if (self.credentials().type() || !value || !value.length) {
+            return;
+        }
+
+        self.credentials().type('key');
     });
 
     self.image().sourceImage.subscribe(function (image) {
@@ -336,8 +347,12 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     };
 
     self.loadInfo = function () {
+        if (!self.isValidCredentials()) {
+            return
+        }
+
+        var credentialsType = self.credentials().type();
         var accessKey = self.credentials().accessKey();
-        if (!accessKey) return;
 
         self.loadingResources(true);
 
@@ -347,6 +362,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             "&resource=images";
 
         $.post(url, {
+            "prop:credentialsType": credentialsType,
             "prop:secure:accessKey": accessKey
         }).then(function (response) {
             var $response = $(response);
@@ -381,8 +397,12 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     }
 
     function loadInfoByZone(zoneId) {
+        if (!self.isValidCredentials()) {
+            return
+        }
+
+        var credentialsType = self.credentials().type();
         var accessKey = self.credentials().accessKey();
-        if (!accessKey) return;
 
         var zone = ko.utils.arrayFirst(self.zones(), function (item) {
             return item.id === zoneId;
@@ -398,6 +418,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             "&resource=diskTypes";
 
         $.post(url, {
+            "prop:credentialsType": credentialsType,
             "prop:secure:accessKey": accessKey
         }).then(function (response) {
             var $response = $(response);

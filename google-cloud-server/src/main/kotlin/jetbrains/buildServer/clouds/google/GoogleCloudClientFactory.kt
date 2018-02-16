@@ -55,8 +55,14 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
     override fun createNewClient(state: CloudState,
                                  params: CloudClientParameters,
                                  errors: Array<TypedCloudErrorInfo>): GoogleCloudClient {
-        val accessKey = getParameter(params, GoogleConstants.ACCESS_KEY)
-        val apiConnector = GoogleApiConnectorImpl(accessKey)
+        val credentialsType = params.getParameter(GoogleConstants.CREDENTIALS_TYPE)
+        val apiConnector = if (credentialsType != GoogleConstants.CREDENTIALS_ENVIRONMENT) {
+            val accessKey = getParameter(params, GoogleConstants.ACCESS_KEY)
+            GoogleApiConnectorImpl(accessKey)
+        } else {
+            GoogleApiConnectorImpl()
+        }
+
         apiConnector.setServerId(mySettings.serverUUID)
         apiConnector.setProfileId(state.profileId)
 

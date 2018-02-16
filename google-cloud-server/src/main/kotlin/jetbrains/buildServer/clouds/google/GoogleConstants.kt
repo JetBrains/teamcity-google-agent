@@ -24,6 +24,15 @@ import jetbrains.buildServer.clouds.CloudImageParameters
  */
 class GoogleConstants {
 
+    val credentialsType: String
+        get() = CREDENTIALS_TYPE
+
+    val credentialsEnvironment: String
+        get() = CREDENTIALS_ENVIRONMENT
+
+    val credentialsKey: String
+        get() = CREDENTIALS_KEY
+
     val accessKey: String
         get() = ACCESS_KEY
 
@@ -85,6 +94,9 @@ class GoogleConstants {
         get() = SCOPES
 
     companion object {
+        const val CREDENTIALS_TYPE = "credentialsType"
+        const val CREDENTIALS_ENVIRONMENT = "environment"
+        const val CREDENTIALS_KEY = "key"
         const val ACCESS_KEY = Constants.SECURE_PROPERTY_PREFIX + "accessKey"
         const val SOURCE_IMAGE = "sourceImage"
         const val ZONE = "zone"
