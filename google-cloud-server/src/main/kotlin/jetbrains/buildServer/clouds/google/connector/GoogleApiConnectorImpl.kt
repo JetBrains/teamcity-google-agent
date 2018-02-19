@@ -293,7 +293,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 "compute.instances.list",
                 "compute.instances.setMetadata",
                 "compute.machineTypes.list",
+                "compute.diskTypes.list",
                 "compute.networks.list",
+                "compute.subnetworks.list",
                 "compute.zones.list")
 
         val regionByZone: ConcurrentHashMap<String, String> = ConcurrentHashMap()

@@ -64,9 +64,9 @@
         <tr>
             <td colspan="2">
                 <span class="smallNote">
-                    To start cloud build agents you need to assign <em>Compute Engine Instance Admin (v1)</em> role.
-                    <bs:help urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_compute_engine_roles" file=""/>
-                    To verify permissions enable <a href="https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview"
+                    To start cloud build agents you need to assign <em>Compute Engine Instance Admin (v1)</em> and <em>Project Viewer</em> roles.
+                    <bs:help urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_compute_engine_roles" file=""/><br/>
+                    To verify permissions for service account enable <a href="https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview"
                        target="_blank">Google Cloud Resource Manager API</a>.
                     <span data-bind="css: {hidden: !loadingResources() && !validatingKey()}">
                         <i class="icon-refresh icon-spin"></i>
