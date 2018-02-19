@@ -89,29 +89,28 @@ class SettingsController(server: SBuildServer,
         val resources = request.getParameterValues("resource")
         val parameters = request.parameterMap.entries.associate { it.key to (it.value.firstOrNull() ?: "") }
         val promises = hashMapOf<String, Deferred<Content>>()
+        val errorMessages = mutableSetOf<String>()
 
         resources.filterNotNull()
                 .forEach { resource ->
                     myHandlers[resource]?.let {
-                        promises += resource to it.handle(parameters)
+                        try {
+                            promises += resource to it.handle(parameters)
+                        } catch (e: Throwable) {
+                            handleError(e, errorMessages, errors, resource)
+                        }
                     }
                 }
 
         val context = request.startAsync(request, response)
         promises.values.forEach{ it -> it.start() }
 
-        val errorMessages = mutableSetOf<String>()
+
         promises.keys.forEach { resource ->
             try {
                 xmlResponse.addContent(promises[resource]?.await())
             } catch (e: Throwable) {
-                LOG.infoAndDebugDetails(e.message, e)
-                e.message?.let {
-                    if (!errorMessages.contains(it)) {
-                        errors.addError(resource, it)
-                        errorMessages.add(it)
-                    }
-                }
+                handleError(e, errorMessages, errors, resource)
             }
         }
 
@@ -121,6 +120,19 @@ class SettingsController(server: SBuildServer,
 
         writeResponse(xmlResponse, context.response)
         context.complete()
+    }
+
+    private fun handleError(e: Throwable,
+                            errorMessages: MutableSet<String>,
+                            errors: ActionErrors,
+                            resource: String): Unit? {
+        LOG.infoAndDebugDetails(e.message, e)
+        return e.message?.let {
+            if (!errorMessages.contains(it)) {
+                errors.addError(resource, it)
+                errorMessages.add(it)
+            }
+        }
     }
 
     companion object {

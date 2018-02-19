@@ -123,7 +123,7 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
     }
 
     override fun getInitialParameterValues(): Map<String, String> {
-        return emptyMap()
+        return mapOf(GoogleConstants.CREDENTIALS_TYPE to GoogleConstants.CREDENTIALS_ENVIRONMENT)
     }
 
     override fun getPropertiesProcessor(): PropertiesProcessor {

@@ -57,6 +57,10 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         })
     });
 
+    self.credentials().type.subscribe(function(value) {
+        if (value) self.loadInfo();
+    });
+
     self.isValidCredentials = ko.pureComputed(function () {
         return self.credentials().type() === 'environment' || self.credentials().accessKey.isValid();
     });
@@ -357,7 +361,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         self.loadingResources(true);
 
         var url = getBasePath() +
-            "resource=zones" +
+            "resource=permissions" +
+            "&resource=zones" +
             "&resource=networks" +
             "&resource=images";
 

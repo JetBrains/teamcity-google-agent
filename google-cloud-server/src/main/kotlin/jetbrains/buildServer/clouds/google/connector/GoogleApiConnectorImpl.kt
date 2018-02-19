@@ -53,18 +53,23 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
     constructor() {
         compute = ComputeOptions.getDefaultInstance().service
+        myProjectId = ComputeOptions.getDefaultProjectId()
     }
 
     override fun test() {
-        val builder = ResourceManagerOptions.newBuilder()
-        myAccessKey?.let {
-            it.trim().byteInputStream().use {
-                val credentials = GoogleCredentials.fromStream(it)
-                builder.setCredentials(credentials)
+        val resourceManager = if (myAccessKey == null) {
+            ResourceManagerOptions.getDefaultInstance().service
+        } else {
+            val builder = ResourceManagerOptions.newBuilder()
+            myAccessKey?.let {
+                it.trim().byteInputStream().use {
+                    val credentials = GoogleCredentials.fromStream(it)
+                    builder.setCredentials(credentials)
+                }
             }
+            builder.build().service
         }
 
-        val resourceManager = builder.build().service
         val missingPermissions = mutableListOf<String>()
         resourceManager.testPermissions(myProjectId, REQUIRED_PERMISSIONS).forEachIndexed { i, exists ->
             if (!exists) missingPermissions.add(REQUIRED_PERMISSIONS[i])

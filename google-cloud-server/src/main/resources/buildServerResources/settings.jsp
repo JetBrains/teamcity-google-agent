@@ -38,6 +38,7 @@
             <th><label for="${cons.accessKey}">JSON private key: <l:star/></label></th>
             <td>
                 <div data-bind="visible: showAccessKey || !isValidCredentials()" style="display: none">
+                    <div>Edit JSON key:</div>
                     <textarea name="prop:${cons.accessKey}" class="longField"
                               rows="5" cols="49"
                               data-bind="initializeValue: credentials().accessKey,
@@ -50,14 +51,13 @@
                     <span data-bind="css: {invisible: !validatingKey()}">
                         <i class="icon-refresh icon-spin"></i>
                     </span>
-                    <div data-bind="visible: hasFileReader">
-                        <span class="smallNote">You could paste JSON file contents, select local file or drop it onto the text area.</span>
-                        <input type="file"
-                               data-bind="event: { change: function() { loadAccessKey($element.files[0]) } }"/>
-                    </div>
                 </div>
                 <a href="#" data-bind="click: function() { showAccessKey(true) }, visible: !showAccessKey()">Edit JSON key</a>
                 <span class="smallNote">Specify the JSON private key.</span>
+                <div data-bind="visible: hasFileReader">
+                    <input type="file"
+                           data-bind="event: { change: function() { loadAccessKey($element.files[0]) } }"/>
+                </div>
                 <span class="error option-error" data-bind="validationMessage: credentials().accessKey"></span>
             </td>
         </tr>
@@ -68,10 +68,11 @@
                     <bs:help urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_compute_engine_roles" file=""/>
                     To verify permissions enable <a href="https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview"
                        target="_blank">Google Cloud Resource Manager API</a>.
+                    <span data-bind="css: {hidden: !loadingResources() && !validatingKey()}">
+                        <i class="icon-refresh icon-spin"></i>
+                    </span>
                 </span>
-                <span data-bind="css: {hidden: !loadingResources() && !validatingKey()}"><i class="icon-refresh icon-spin"></i> Loading service data...</span>
-                <span class="error option-error"
-                      data-bind="text: errorResources, css: {hidden: loadingResources}"></span>
+                <span class="error option-error" data-bind="text: errorResources, css: {hidden: loadingResources}"></span>
             </td>
         </tr>
     </l:settingsGroup>
