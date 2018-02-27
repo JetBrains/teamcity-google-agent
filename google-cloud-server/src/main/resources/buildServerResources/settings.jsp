@@ -309,8 +309,8 @@
         </div>
 
         <a class="btn" href="#" disabled="disabled"
-           data-bind="click: (!isValidCredentials() || loadingResources()) ? false : showDialog.bind($data, null),
-                      attr: {disabled: !isValidCredentials() || loadingResources() ? 'disabled' : null}">
+           data-bind="click: (!isValidCredentials() || loadingResources() || errorResources()) ? false : showDialog.bind($data, null),
+                      attr: {disabled: !isValidCredentials() || loadingResources() || errorResources() ? 'disabled' : null}">
             <span class="addNew">Add image</span>
         </a>
     </div>
