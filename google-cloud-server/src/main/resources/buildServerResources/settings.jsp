@@ -18,20 +18,22 @@
 
     <table class="runnerFormTable">
     <l:settingsGroup title="Security Credentials">
+        <c:set var="credentialsValue" value="${propertiesBean.properties[cons.credentialsType]}"/>
+        <c:set var="credentialsType" value="${empty credentialsValue ? cons.credentialsKey : credentialsValue}"/>
         <tr>
             <th><label for="${cons.credentialsType}">Credentials type: <l:star/></label></th>
             <td>
-                <input type="radio" name="prop:${cons.credentialsType}" value="${cons.credentialsEnvironment}"
-                       data-bind="checked: credentials().type, initializeValue: credentials().type"/>
+                <input type="radio" value="${cons.credentialsEnvironment}" data-bind="checked: credentials().type"/>
                 <label for="${cons.credentialsEnvironment}">From machine environment</label>
                 <span class="smallNote">Use authentication from machine environment</span>
                 <br/>
-                <input type="radio" name="prop:${cons.credentialsType}" value="${cons.credentialsKey}"
-                       data-bind="checked: credentials().type"/>
+                <input type="radio" value="${cons.credentialsKey}" data-bind="checked: credentials().type"/>
                 <label for="${cons.credentialsKey}">JSON private key</label>
                 <span class="smallNote">Specify private key for service account</span>
                 <br/>
                 <a href="https://console.cloud.google.com/iam-admin/" target="_blank">Open IAM Console</a>
+                <input type="hidden" name="prop:${cons.credentialsType}" value="${credentialsType}"
+                       data-bind="initializeValue: credentials().type"/>
             </td>
         </tr>
         <tr data-bind="css: {hidden: credentials().type() != '${cons.credentialsKey}' }">

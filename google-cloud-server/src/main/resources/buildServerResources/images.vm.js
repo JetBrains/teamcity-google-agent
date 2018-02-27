@@ -62,7 +62,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     });
 
     self.isValidCredentials = ko.pureComputed(function () {
-        return self.credentials().type() === 'environment' || self.credentials().accessKey.isValid();
+        return self.credentials().type() === 'environment' ||
+            self.credentials().type() === 'key' && self.credentials().accessKey.isValid();
     });
 
     self.isValidCredentials.subscribe(function(value) {
@@ -184,14 +185,6 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         }
 
         self.showAccessKey(false);
-    });
-
-    self.credentials().accessKey.subscribe(function (value) {
-        if (self.credentials().type() || !value || !value.length) {
-            return;
-        }
-
-        self.credentials().type('key');
     });
 
     self.image().sourceImage.subscribe(function (image) {
