@@ -33,7 +33,7 @@
                 <br/>
                 <a href="https://console.cloud.google.com/iam-admin/" target="_blank">Open IAM Console</a>
                 <input type="hidden" name="prop:${cons.credentialsType}" value="${credentialsType}"
-                       data-bind="initializeValue: credentials().type"/>
+                       data-bind="initializeValue: credentials().type, value: credentials().type"/>
             </td>
         </tr>
         <tr data-bind="css: {hidden: credentials().type() != '${cons.credentialsKey}' }">
