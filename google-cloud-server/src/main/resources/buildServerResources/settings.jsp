@@ -236,7 +236,9 @@
                            data-bind="textInput: image().scopes"/>
                     <span class="error option-error" data-bind="validationMessage: image().scopes"></span>
                     <span class="smallNote">
-                        Specify list of scopes for the service account.
+                        Specify list of scopes<bs:help
+                            urlPrefix="https://developers.google.com/identity/protocols/googlescopes" file=""/>
+                        for the service account.
                     </span>
                 </td>
             </tr>
