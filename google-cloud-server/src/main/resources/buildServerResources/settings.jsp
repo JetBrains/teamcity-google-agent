@@ -32,7 +32,7 @@
                 <span class="smallNote">Specify private key for service account</span>
                 <br/>
                 <a href="https://console.cloud.google.com/iam-admin/" target="_blank">Open IAM Console</a>
-                <input type="hidden" name="prop:${cons.credentialsType}" value="${credentialsType}"
+                <input type="hidden" name="prop:${cons.credentialsType}" value="<c:out value="${credentialsType}"/>"
                        data-bind="initializeValue: credentials().type, value: credentials().type"/>
             </td>
         </tr>
@@ -49,7 +49,8 @@
                               dragenter: function() { dragEnterHandler(); },
                               dragleave: function() { dragLeaveHandler(); },
                               drop: function(data, event) { return dropHandler(event) } },
-                              css: { attentionComment: isDragOver }">${propertiesBean.properties[cons.accessKey]}</textarea>
+                              css: { attentionComment: isDragOver }"><c:out
+                              value="${propertiesBean.properties[cons.accessKey]}"/></textarea>
                     <span data-bind="css: {invisible: !validatingKey()}">
                         <i class="icon-refresh icon-spin"></i>
                     </span>
