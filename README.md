@@ -37,6 +37,28 @@ Before you can start using the integration, you need to create a new cloud image
 
 Then you need to [remove temporary files](https://confluence.jetbrains.com/display/TCDL/TeamCity+Integration+with+Cloud+Solutions#TeamCityIntegrationwithCloudSolutions-Capturinganimagefromavirtualmachine) and [create a new image](https://cloud.google.com/compute/docs/images/create-delete-deprecate-private-images) from the instance disk.
 
+### Startup and shutdown scripts
+
+To specify instance metadata you could the "Custom metadata" property in cloud image settings. It could be useful while defining [startup](https://cloud.google.com/compute/docs/startupscript) and [shutdown](https://cloud.google.com/compute/docs/shutdownscript) scripts.
+
+#### Preemtible instance
+
+If you are using preemtible instances you have to specify [shutdown script](https://cloud.google.com/compute/docs/instances/create-start-preemptible-instance#handle_preemption) to gracefully reschedule build from preemted VM on another build agent like that.
+
+For Linix instances:
+```json
+{
+  "shutdown-script": "#! /bin/bash\n/opt/buildagent/bin/agent.sh stop force"
+}
+```
+
+For Windows instances:
+```json
+{
+  "windows-shutdown-script-cmd": "C:\BuildAgent\bin\agent.bat stop force"
+}
+```
+
 ## License
 
 Apache 2.0
