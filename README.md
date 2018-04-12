@@ -55,7 +55,7 @@ For Linix instances:
 For Windows instances:
 ```json
 {
-  "windows-shutdown-script-cmd": "C:\BuildAgent\bin\agent.bat stop force"
+  "windows-shutdown-script-cmd": "C:\\BuildAgent\\bin\\agent.bat stop force"
 }
 ```
 
