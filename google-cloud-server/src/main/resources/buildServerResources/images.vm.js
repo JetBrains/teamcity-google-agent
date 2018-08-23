@@ -57,7 +57,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         })
     });
 
-    self.credentials().type.subscribe(function(value) {
+    self.credentials().type.subscribe(function (value) {
         if (value) self.loadInfo();
     });
 
@@ -66,8 +66,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             self.credentials().type() === 'key' && self.credentials().accessKey.isValid();
     });
 
-    self.isValidCredentials.subscribe(function(value) {
-       if (value) self.loadInfo();
+    self.isValidCredentials.subscribe(function (value) {
+        if (value) self.loadInfo();
     });
 
     // Image details
@@ -89,7 +89,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
                     return number > 0 && (number === 1 || (number % 2 === 0));
                 },
                 message: "1 or an even number of vCPUs can be created",
-                onlyIf: function() {
+                onlyIf: function () {
                     return self.machineCustom() === true;
                 }
             }
@@ -100,7 +100,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
                     return value > 900 && (value % 256 === 0);
                 },
                 message: "Total memory must be a multiple of 256 MB",
-                onlyIf: function() {
+                onlyIf: function () {
                     return self.machineCustom() === true;
                 }
             }
@@ -232,29 +232,29 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
         var sourceImage = image.sourceImage;
         if (sourceImage && !ko.utils.arrayFirst(self.sourceImages(), function (item) {
-                return item.id === sourceImage;
-            })) {
+            return item.id === sourceImage;
+        })) {
             self.sourceImages({id: sourceImage, text: sourceImage});
         }
 
         var machineType = image.machineType;
         if (machineType && !ko.utils.arrayFirst(self.machineTypes(), function (item) {
-                return item.id === machineType;
-            })) {
+            return item.id === machineType;
+        })) {
             self.machineTypes({id: machineType, text: machineType});
         }
 
         var diskType = image.diskType;
         if (diskType && !ko.utils.arrayFirst(self.diskTypes(), function (item) {
-                return item.id === diskType;
-            })) {
+            return item.id === diskType;
+        })) {
             self.diskTypes({id: diskType, text: diskType});
         }
 
         var network = image.network;
         if (network && !ko.utils.arrayFirst(self.networks(), function (item) {
-                return item.id === network;
-            })) {
+            return item.id === network;
+        })) {
             self.networks({id: network, text: network});
         }
 
@@ -348,9 +348,6 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             return
         }
 
-        var credentialsType = self.credentials().type();
-        var accessKey = self.credentials().accessKey();
-
         self.loadingResources(true);
 
         var url = getBasePath() +
@@ -359,10 +356,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             "&resource=networks" +
             "&resource=images";
 
-        $.post(url, {
-            "prop:credentialsType": credentialsType,
-            "prop:secure:accessKey": accessKey
-        }).then(function (response) {
+        $.post(url, getCredentials()).then(function (response) {
             var $response = $(response);
             var errors = getErrors($response);
             if (errors) {
@@ -483,6 +477,21 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     function getBasePath() {
         return config.baseUrl + "?";
+    }
+
+    function getCredentials() {
+        var credentialsType = self.credentials().type();
+        var accessKey = self.credentials().accessKey();
+        if (credentialsType === "key") {
+            return {
+                "prop:credentialsType": credentialsType,
+                "prop:secure:accessKey": accessKey
+            };
+        } else {
+            return {
+                "prop:credentialsType": credentialsType
+            };
+        }
     }
 
     function getErrors($response) {
