@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.2.30"
+    id "org.jetbrains.kotlin.jvm" version "1.2.61"
 }
 
 ext {
@@ -11,6 +11,10 @@ ext {
 
 group = projectIds.group
 version = projectIds.version
+
+repositories {
+    mavenCentral()
+}
 
 allprojects {
     group = projectIds.group
@@ -25,5 +29,5 @@ subprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.2.1'
+    gradleVersion = '4.9'
 }
