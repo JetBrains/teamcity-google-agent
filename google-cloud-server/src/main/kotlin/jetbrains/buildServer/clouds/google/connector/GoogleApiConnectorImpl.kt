@@ -98,6 +98,10 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                             if (!details.subnet.isNullOrBlank()) {
                                 subnetwork = details.subnet
                             }
+                            addAccessConfigs(AccessConfig.newBuilder()
+                                    .setName("external-nat")
+                                    .setType("ONE_TO_ONE_NAT")
+                                    .build())
                         }
                         .build())
                 .setMetadata(Metadata.newBuilder()
