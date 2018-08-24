@@ -22,6 +22,7 @@ import jetbrains.buildServer.util.StringUtil
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.CoroutineStart
 import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.runBlocking
 
 class GoogleApiConnectorImpl : GoogleApiConnector {
 
@@ -68,7 +69,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         }
     }
 
-    override fun createVmAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = async(CommonPool, CoroutineStart.LAZY) {
+    override fun createImageInstanceAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = async(CommonPool, CoroutineStart.LAZY) {
         val details = instance.image.imageDetails
         val zone = details.zone
         val network = details.network ?: "default"
@@ -76,8 +77,35 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
             "custom-${details.machineCores}-${details.machineMemory}${if (details.machineMemoryExt) "-ext" else ""}"
         } else details.machineType!!
 
-        val instanceInfo = Instance.newBuilder()
-                .setName(instance.instanceId)
+        val metadata = mutableMapOf(
+                GoogleConstants.TAG_SERVER to myServerId,
+                GoogleConstants.TAG_DATA to userData.serialize(),
+                GoogleConstants.TAG_PROFILE to myProfileId,
+                GoogleConstants.TAG_SOURCE to details.sourceId
+        ).apply {
+            details.metadata?.let {
+                if (it.isBlank()) {
+                    return@let
+                }
+                val factory = Utils.getDefaultJsonFactory()
+                val parser = factory.createJsonParser(it)
+                val json = try {
+                    parser.parse(GenericJson::class.java)
+                } catch (e: Exception) {
+                    LOG.warn("Invalid JSON metadata $it", e)
+                    return@let
+                }
+                json.forEach { key, value ->
+                    if (value is String) {
+                        this[key] = value
+                    } else {
+                        LOG.warn("Invalid value for metadata key $key")
+                    }
+                }
+            }
+        }
+
+        val instanceInfo = getInstanceBuilder(instance)
                 .setMachineType(ProjectZoneMachineTypeName.of(machineType, myProjectId, zone).toString())
                 .addDisks(AttachedDisk.newBuilder()
                         .setInitializeParams(AttachedDiskInitializeParams.newBuilder()
@@ -104,47 +132,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                                     .build())
                         }
                         .build())
-                .setMetadata(Metadata.newBuilder()
-                        .addAllItems(mutableMapOf(
-                                GoogleConstants.TAG_SERVER to myServerId,
-                                GoogleConstants.TAG_DATA to userData.serialize(),
-                                GoogleConstants.TAG_PROFILE to myProfileId,
-                                GoogleConstants.TAG_SOURCE to details.sourceId
-                        ).apply {
-                            details.metadata?.let {
-                                if (it.isBlank()) {
-                                    return@let
-                                }
-
-                                val factory = Utils.getDefaultJsonFactory()
-                                val parser = factory.createJsonParser(it)
-                                val json = try {
-                                    parser.parse(GenericJson::class.java)
-                                } catch (e: Exception) {
-                                    LOG.warn("Invalid JSON metadata $it", e)
-                                    return@let
-                                }
-
-                                json.forEach { key, value ->
-                                    if (value is String) {
-                                        this[key] = value
-                                    } else {
-                                        LOG.warn("Invalid value for metadata key $key")
-                                    }
-                                }
-                            }
-                        }.map {
-                            Items.newBuilder()
-                                    .setKey(it.key)
-                                    .setValue(it.value)
-                                    .build()
-                        })
-                        .build())
-                .setScheduling(Scheduling.newBuilder()
-                        .setAutomaticRestart(false)
-                        .setOnHostMaintenance("TERMINATE")
-                        .setPreemptible(details.preemptible)
-                        .build())
+                .setMetadata(getMetadata(metadata))
                 .apply {
                     if (!details.serviceAccount.isNullOrBlank()) {
                         val scopes = StringUtil.split(details.scopes
@@ -162,6 +150,47 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .setInstanceResource(instanceInfo)
                 .build())
                 .await()
+    }
+
+    override fun createTemplateInstanceAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = async(CommonPool, CoroutineStart.LAZY) {
+        val details = instance.image.imageDetails
+        val zone = details.zone
+
+        val instanceInfo = getInstanceBuilder(instance)
+                .setMetadata(getMetadata(mutableMapOf(
+                        GoogleConstants.TAG_SERVER to myServerId,
+                        GoogleConstants.TAG_DATA to userData.serialize(),
+                        GoogleConstants.TAG_PROFILE to myProfileId,
+                        GoogleConstants.TAG_SOURCE to details.sourceId
+                )))
+                .build()
+
+        instanceClient.insertInstanceCallable().futureCall(InsertInstanceHttpRequest.newBuilder()
+                .setSourceInstanceTemplate(ProjectGlobalInstanceTemplateName.of(details.instanceTemplate, myProjectId).toString())
+                .setZone(ProjectZoneName.of(myProjectId, zone).toString())
+                .setInstanceResource(instanceInfo)
+                .build())
+                .await()
+    }
+
+    private fun getInstanceBuilder(instance: GoogleCloudInstance): Instance.Builder {
+        return Instance.newBuilder()
+                .setName(instance.instanceId)
+                .setScheduling(Scheduling.newBuilder()
+                        .setAutomaticRestart(false)
+                        .setOnHostMaintenance("TERMINATE")
+                        .setPreemptible(instance.image.imageDetails.preemptible)
+                        .build())
+    }
+
+    private fun getMetadata(metadata: Map<String, String?>): Metadata? {
+        return Metadata.newBuilder()
+                .addAllItems(metadata.map {
+                    Items.newBuilder()
+                            .setKey(it.key)
+                            .setValue(it.value)
+                            .build()
+                }).build()
     }
 
     override fun startVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
@@ -200,13 +229,12 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         return ProjectZoneInstanceName.of(instance.id, myProjectId, instance.zone).toString()
     }
 
-    override fun checkImage(image: GoogleCloudImage): Array<TypedCloudErrorInfo> {
-        return emptyArray()
+    override fun checkImage(image: GoogleCloudImage) = runBlocking {
+        val errors = image.handler.checkImageAsync(image).await()
+        errors.map { TypedCloudErrorInfo.fromException(it) }.toTypedArray()
     }
 
-    override fun checkInstance(instance: GoogleCloudInstance): Array<TypedCloudErrorInfo> {
-        return emptyArray()
-    }
+    override fun checkInstance(instance: GoogleCloudInstance): Array<TypedCloudErrorInfo> = emptyArray()
 
     override fun getImagesAsync() = async(CommonPool, CoroutineStart.LAZY) {
         val images = imageClient.listImagesPagedCallable()
@@ -216,6 +244,19 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .await()
 
         images.iterateAll()
+                .map { it.name to nonEmpty(it.description, it.name) }
+                .sortedWith(compareBy(comparator) { it -> it.second })
+                .associate { it -> it.first to it.second }
+    }
+
+    override fun getTemplatesAsync() = async(CommonPool, CoroutineStart.LAZY) {
+        val templates = instanceTemplateClient.listInstanceTemplatesPagedCallable()
+                .futureCall(ListInstanceTemplatesHttpRequest.newBuilder()
+                        .setProject(ProjectName.of(myProjectId).toString())
+                        .build())
+                .await()
+
+        templates.iterateAll()
                 .map { it.name to nonEmpty(it.description, it.name) }
                 .sortedWith(compareBy(comparator) { it -> it.second })
                 .associate { it -> it.first to it.second }
@@ -398,6 +439,12 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     private val diskTypeClient: DiskTypeClient by lazy {
         DiskTypeClient.create(DiskTypeSettings.newBuilder()
                 .setCredentialsProvider(getCredentialsProvider { DiskTypeSettings.getDefaultServiceScopes() })
+                .build())
+    }
+
+    private val instanceTemplateClient: InstanceTemplateClient by lazy {
+        InstanceTemplateClient.create(InstanceTemplateSettings.newBuilder()
+                .setCredentialsProvider(getCredentialsProvider { InstanceTemplateSettings.getDefaultServiceScopes() })
                 .build())
     }
 

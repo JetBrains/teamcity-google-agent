@@ -36,8 +36,14 @@ class GoogleConstants {
     val accessKey: String
         get() = ACCESS_KEY
 
+    val imageType: String
+        get() = IMAGE_TYPE
+
     val sourceImage: String
         get() = SOURCE_IMAGE
+
+    val instanceTemplate: String
+        get() = INSTANCE_TEMPLATE
 
     val zone: String
         get() = ZONE
@@ -98,7 +104,9 @@ class GoogleConstants {
         const val CREDENTIALS_ENVIRONMENT = "environment"
         const val CREDENTIALS_KEY = "key"
         const val ACCESS_KEY = Constants.SECURE_PROPERTY_PREFIX + "accessKey"
+        const val IMAGE_TYPE = "imageType"
         const val SOURCE_IMAGE = "sourceImage"
+        const val INSTANCE_TEMPLATE = "instanceTemplate"
         const val ZONE = "zone"
         const val REGION = "region"
         const val NETWORK_ID = "network"

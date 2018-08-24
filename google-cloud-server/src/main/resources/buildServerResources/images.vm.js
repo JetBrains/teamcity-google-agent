@@ -70,13 +70,45 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         if (value) self.loadInfo();
     });
 
+    var imageTypes = {
+        image: 'Image',
+        template: 'Template'
+    };
+
+    self.imageTypes = ko.observableArray([
+        {id: imageTypes.image, text: "Image"},
+        {id: imageTypes.template, text: "Instance Template"}
+    ]);
+
+    self.imageType = ko.observable();
+
     // Image details
     var maxLength = 60;
     self.machineCustom = ko.observable(false);
     self.image = ko.validatedObservable({
-        sourceImage: ko.observable().extend({required: true}),
+        imageType: self.imageType,
+        sourceImage: ko.observable().extend({
+            required: {
+                onlyIf: function () {
+                    return self.imageType() === imageTypes.image
+                }
+            }
+        }),
+        instanceTemplate: ko.observable().extend({
+            required: {
+                onlyIf: function () {
+                    return self.imageType() === imageTypes.template
+                }
+            }
+        }),
         zone: ko.observable().extend({required: true}),
-        network: ko.observable().extend({required: true}),
+        network: ko.observable().extend({
+            required: {
+                onlyIf: function () {
+                    return self.imageType() === imageTypes.image
+                }
+            }
+        }),
         subnet: ko.observable(),
         maxInstances: ko.observable(1).extend({required: true, min: 0}),
         preemptible: ko.observable(false),
@@ -90,7 +122,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
                 },
                 message: "1 or an even number of vCPUs can be created",
                 onlyIf: function () {
-                    return self.machineCustom() === true;
+                    return self.imageType() === imageTypes.image && self.machineCustom() === true;
                 }
             }
         }),
@@ -101,7 +133,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
                 },
                 message: "Total memory must be a multiple of 256 MB",
                 onlyIf: function () {
-                    return self.machineCustom() === true;
+                    return self.imageType() === imageTypes.image && self.machineCustom() === true;
                 }
             }
         }),
@@ -164,6 +196,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     // Data from APIs
     self.sourceImages = ko.observableArray([]);
+    self.instanceTemplates = ko.observableArray([]);
     self.zones = ko.observableArray([]);
     self.networks = ko.observableArray([]);
     self.subnets = ko.observableArray([]);
@@ -208,6 +241,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     self.images_data.subscribe(function (data) {
         var images = ko.utils.parseJson(data || "[]");
         images.forEach(function (image) {
+            image.imageType = image.imageType || imageTypes.image;
             image.preemptible = getBoolean(image.preemptible);
             image.machineCustom = getBoolean(image.machineCustom);
             image.machineMemoryExt = getBoolean(image.machineMemoryExt);
@@ -224,6 +258,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
         var model = self.image();
         var image = data || {
+            imageType: imageTypes.image,
             maxInstances: 1,
             preemptible: false,
             machineCustom: false,
@@ -235,6 +270,13 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             return item.id === sourceImage;
         })) {
             self.sourceImages({id: sourceImage, text: sourceImage});
+        }
+
+        var instanceTemplate = image.instanceTemplate;
+        if (instanceTemplate && !ko.utils.arrayFirst(self.instanceTemplates(), function (item) {
+            return item.id === instanceTemplate;
+        })) {
+            self.instanceTemplates({id: instanceTemplate, text: instanceTemplate});
         }
 
         var machineType = image.machineType;
@@ -258,7 +300,9 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             self.networks({id: network, text: network});
         }
 
+        model.imageType(image.imageType);
         model.sourceImage(image.sourceImage);
+        model.instanceTemplate(image.instanceTemplate);
         model.zone(image.zone);
         model.network(network);
         var subnet = image.subnet;
@@ -297,7 +341,9 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     self.saveImage = function () {
         var model = self.image();
         var image = {
+            imageType: model.imageType(),
             sourceImage: model.sourceImage(),
+            instanceTemplate: model.instanceTemplate(),
             zone: model.zone(),
             network: model.network(),
             subnet: model.subnet(),
@@ -354,7 +400,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             "resource=permissions" +
             "&resource=zones" +
             "&resource=networks" +
-            "&resource=images";
+            "&resource=images" +
+            "&resource=templates";
 
         $.post(url, getCredentials()).then(function (response) {
             var $response = $(response);
@@ -367,6 +414,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             }
 
             self.sourceImages(getSourceImages($response));
+            self.instanceTemplates(getInstanceTemplates($response));
             self.zones(getZones($response));
             self.networks(getNetworks($response));
         }, function (error) {
@@ -542,6 +590,12 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     function getSourceImages($response) {
         return $response.find("images:eq(0) image").map(function () {
+            return {id: $(this).attr("id"), text: $(this).text()};
+        }).get();
+    }
+
+    function getInstanceTemplates($response) {
+        return $response.find("templates:eq(0) template").map(function () {
             return {id: $(this).attr("id"), text: $(this).text()};
         }).get();
     }

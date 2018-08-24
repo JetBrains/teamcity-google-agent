@@ -84,7 +84,11 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
         return params.cloudImages.map {
             GoogleCloudImageDetails(
                     it.id!!,
-                    it.getParameter(GoogleConstants.SOURCE_IMAGE)!!,
+                    it.getParameter(GoogleConstants.IMAGE_TYPE)?.let {
+                        GoogleCloudImageType.valueOf(it)
+                    },
+                    it.getParameter(GoogleConstants.SOURCE_IMAGE),
+                    it.getParameter(GoogleConstants.INSTANCE_TEMPLATE),
                     it.getParameter(GoogleConstants.ZONE)!!,
                     it.getParameter(GoogleConstants.NETWORK_ID)!!,
                     it.getParameter(GoogleConstants.SUBNET_ID),

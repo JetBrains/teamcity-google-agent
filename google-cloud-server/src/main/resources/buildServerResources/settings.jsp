@@ -85,6 +85,16 @@
                dialogClass="GoogleImageDialog" titleId="GoogleImageDialogTitle">
         <table class="runnerFormTable">
             <tr>
+                <th><label for="${cons.imageType}">Image Type: <l:star/></label></th>
+                <td>
+                    <select name="${cons.imageType}" class="longField ignoreModified"
+                            data-bind="options: imageTypes, optionsText: 'text', optionsValue: 'id',
+                            value: image().imageType"></select>
+                    <span class="error option-error" data-bind="validationMessage: image().imageType"></span>
+                    <span class="error option-error" data-bind="text: errorResources"></span>
+                </td>
+            </tr>
+            <tr data-bind="if: image().imageType() == 'Image'">
                 <th><label for="${cons.sourceImage}">Image: <l:star/></label></th>
                 <td>
                     <select name="${cons.sourceImage}" class="longField ignoreModified"
@@ -92,6 +102,16 @@
                              optionsText: 'text', optionsValue: 'id', value: image().sourceImage"></select>
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
                     <span class="error option-error" data-bind="validationMessage: image().sourceImage"></span>
+                </td>
+            </tr>
+            <tr data-bind="if: image().imageType() == 'Template'">
+                <th><label for="${cons.instanceTemplate}">Instance Template: <l:star/></label></th>
+                <td>
+                    <select name="${cons.instanceTemplate}" class="longField ignoreModified"
+                            data-bind="options: instanceTemplates, optionsCaption: '<Select template>',
+                             optionsText: 'text', optionsValue: 'id', value: image().instanceTemplate"></select>
+                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
+                    <span class="error option-error" data-bind="validationMessage: image().instanceTemplate"></span>
                 </td>
             </tr>
             <tr>
@@ -130,7 +150,7 @@
                     <span class="error option-error" data-bind="validationMessage: image().maxInstances"></span>
                 </td>
             </tr>
-            <tr>
+            <tr data-bind="if: image().imageType() == 'Image'">
                 <th><label for="${cons.machineType}">Machine type:</label></th>
                 <td>
                     <input type="checkbox" name="${cons.machineCustom}" class="ignoreModified"
@@ -141,7 +161,7 @@
                     </label><br/>
                 </td>
             </tr>
-            <tr data-bind="ifnot: image().machineCustom">
+            <tr data-bind="if: image().imageType() == 'Image' && !image().machineCustom">
                 <th class="noBorder"></th>
                 <td>
                     <select name="${cons.machineType}" class="longField ignoreModified"
@@ -150,7 +170,7 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
-            <tr data-bind="if: image().machineCustom">
+            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom">
                 <th class="noBorder">Cores: <l:star/></th>
                 <td>
                     <input type="text" name="${cons.machineCores}" class="longField ignoreModified"
@@ -158,7 +178,7 @@
                     <span class="error option-error" data-bind="validationMessage: image().machineCores"></span>
                 </td>
             </tr>
-            <tr data-bind="if: image().machineCustom">
+            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom">
                 <th class="noBorder">Memory in MB: <l:star/></th>
                 <td>
                     <input type="text" name="${cons.machineMemory}" class="longField ignoreModified"
@@ -166,7 +186,7 @@
                     <span class="error option-error" data-bind="validationMessage: image().machineMemory"></span>
                 </td>
             </tr>
-            <tr data-bind="if: image().machineCustom">
+            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom">
                 <th class="noBorder"></th>
                 <td>
                     <input type="checkbox" name="${cons.machineMemoryExt}" class="ignoreModified"
@@ -184,7 +204,7 @@
                     </label>
                 </td>
             </tr>
-            <tr class="advancedSetting">
+            <tr data-bind="if: image().imageType() == 'Image'" class="advancedSetting">
                 <th><label for="${cons.diskType}">Disk type:</label></th>
                 <td>
                     <select name="${cons.diskType}" class="longField ignoreModified"
@@ -193,7 +213,7 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
-            <tr>
+            <tr data-bind="if: image().imageType() == 'Image'">
                 <th><label for="${cons.network}">Network: <l:star/></label></th>
                 <td>
                     <select name="${cons.network}" class="longField ignoreModified"
@@ -206,7 +226,7 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
                 </td>
             </tr>
-            <tr>
+            <tr data-bind="if: image().imageType() == 'Image'">
                 <th class="noBorder"><label for="${cons.subnet}">Sub network:</label></th>
                 <td>
                     <select name="${cons.subnet}" class="longField ignoreModified"
@@ -215,7 +235,7 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
-            <tr class="advancedSetting">
+            <tr class="advancedSetting" data-bind="if: image().imageType() == 'Image'">
                 <th>Service account:</th>
                 <td>
                     <a href="#" data-bind="click: function(data) { showServiceAccount(true) }, visible: !showServiceAccount()">Edit service account</a>
@@ -230,7 +250,7 @@
                     </span>
                 </td>
             </tr>
-            <tr class="advancedSetting" data-bind="css: {hidden: !showServiceAccount()}">
+            <tr class="advancedSetting" data-bind="css: {hidden: !showServiceAccount()}, if: image().imageType() == 'Image'">
                 <th class="noBorder">Scopes:</th>
                 <td>
                     <input type="text" name="${cons.scopes}" class="longField ignoreModified"
@@ -243,7 +263,7 @@
                     </span>
                 </td>
             </tr>
-            <tr class="advancedSetting">
+            <tr class="advancedSetting" data-bind="if: image().imageType() == 'Image'">
                 <th><label for="${cons.metadata}">Custom metadata:</label></th>
                 <td>
                     <a href="#" data-bind="click: function(data) { showMetadata(true) }, visible: !showMetadata()">Edit metadata</a>
@@ -292,7 +312,12 @@
                 <tr>
                     <td class="nowrap" data-bind="text: $data['source-id']"></td>
                     <td class="nowrap">
+                        <!-- ko if: imageType === 'Image' -->
                         <span data-bind="text: sourceImage.slice(-80), attr: {title: sourceImage}"></span>
+                        <!-- /ko -->
+                        <!-- ko if: imageType === 'Template' -->
+                        <span data-bind="text: instanceTemplate.slice(-80), attr: {title: instanceTemplate}"></span>
+                        <!-- /ko -->
                     </td>
                     <td class="center edit" data-bind="text: maxInstances"></td>
                     <td class="edit">

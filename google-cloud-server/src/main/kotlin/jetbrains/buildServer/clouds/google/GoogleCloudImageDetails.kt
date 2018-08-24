@@ -27,8 +27,12 @@ import jetbrains.buildServer.clouds.base.types.CloneBehaviour
 class GoogleCloudImageDetails(
         @SerializedName(CloudImageParameters.SOURCE_ID_FIELD)
         private val sourceId: String,
+        @SerializedName(GoogleConstants.IMAGE_TYPE)
+        val imageType: GoogleCloudImageType?,
         @SerializedName(GoogleConstants.SOURCE_IMAGE)
-        val sourceImage: String,
+        val sourceImage: String?,
+        @SerializedName(GoogleConstants.INSTANCE_TEMPLATE)
+        val instanceTemplate: String?,
         @SerializedName(GoogleConstants.ZONE)
         val zone: String,
         @SerializedName(GoogleConstants.NETWORK_ID)
@@ -75,4 +79,7 @@ class GoogleCloudImageDetails(
     override fun getBehaviour(): CloneBehaviour {
         return CloneBehaviour.FRESH_CLONE
     }
+
+    val type
+        get(): GoogleCloudImageType = imageType ?: GoogleCloudImageType.Image
 }

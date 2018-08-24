@@ -56,6 +56,7 @@ class SettingsController(server: SBuildServer,
         myHandlers.put("diskTypes", DiskTypesHandler())
         myHandlers.put("images", ImagesHandler())
         myHandlers.put("permissions", PermissionsHandler())
+        myHandlers.put("templates", TemplatesHandler())
     }
 
     override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {

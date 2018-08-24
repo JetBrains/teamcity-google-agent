@@ -24,6 +24,9 @@ import jetbrains.buildServer.clouds.base.AbstractCloudImage
 import jetbrains.buildServer.clouds.base.connector.AbstractInstance
 import jetbrains.buildServer.clouds.base.errors.TypedCloudErrorInfo
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
+import jetbrains.buildServer.clouds.google.types.GoogleHandler
+import jetbrains.buildServer.clouds.google.types.GoogleImageHandler
+import jetbrains.buildServer.clouds.google.types.GoogleTemplateHandler
 import jetbrains.buildServer.clouds.google.utils.IdProvider
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
@@ -36,6 +39,11 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
                                    private val myApiConnector: GoogleApiConnector,
                                    private val myIdProvider: IdProvider)
     : AbstractCloudImage<GoogleCloudInstance, GoogleCloudImageDetails>(myImageDetails.sourceId, myImageDetails.sourceId) {
+
+    private val myImageHandlers = mapOf(
+            GoogleCloudImageType.Image to GoogleImageHandler(myApiConnector),
+            GoogleCloudImageType.Template to GoogleTemplateHandler(myApiConnector)
+    )
 
     override fun getImageDetails(): GoogleCloudImageDetails {
         return myImageDetails
@@ -75,7 +83,7 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
         async(CommonPool) {
             try {
                 LOG.info("Creating new virtual machine ${instance.name}")
-                myApiConnector.createVmAsync(instance, data).await()
+                handler.createInstanceAsync(instance, data).await()
                 instance.status = InstanceStatus.RUNNING
             } catch (e: Throwable) {
                 LOG.warnAndDebugDetails(e.message, e)
@@ -126,9 +134,8 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
                 } else {
                     LOG.info("Stopping virtual machine ${instance.name}")
                     myApiConnector.stopVmAsync(instance).await()
-                    instance.status = InstanceStatus.STOPPED
                 }
-
+                instance.status = InstanceStatus.STOPPED
                 LOG.info("Virtual machine ${instance.name} has been successfully terminated")
             } catch (e: Throwable) {
                 LOG.warnAndDebugDetails(e.message, e)
@@ -141,6 +148,9 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
     override fun getAgentPoolId(): Int? {
         return myImageDetails.agentPoolId
     }
+
+    val handler: GoogleHandler
+        get() = myImageHandlers[imageDetails.type]!!
 
     private fun getInstanceName(): String {
         val sourceName = myImageDetails.sourceId.toLowerCase()

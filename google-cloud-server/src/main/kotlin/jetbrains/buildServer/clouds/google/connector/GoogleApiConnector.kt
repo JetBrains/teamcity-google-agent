@@ -26,7 +26,9 @@ import kotlinx.coroutines.experimental.Deferred
  * Google API connector.
  */
 interface GoogleApiConnector : CloudApiConnector<GoogleCloudImage, GoogleCloudInstance> {
-    fun createVmAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData): Deferred<*>
+    fun createImageInstanceAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData): Deferred<*>
+
+    fun createTemplateInstanceAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData): Deferred<*>
 
     fun deleteVmAsync(instance: GoogleCloudInstance): Deferred<*>
 
@@ -37,6 +39,8 @@ interface GoogleApiConnector : CloudApiConnector<GoogleCloudImage, GoogleCloudIn
     fun stopVmAsync(instance: GoogleCloudInstance): Deferred<*>
 
     fun getImagesAsync(): Deferred<Map<String, String>>
+
+    fun getTemplatesAsync(): Deferred<Map<String, String>>
 
     fun getZonesAsync(): Deferred<Map<String, List<String>>>
 
