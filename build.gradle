@@ -26,6 +26,11 @@ subprojects {
 
     test.useTestNG()
     jar.version = null
+
+    compileKotlin {
+        sourceCompatibility = JavaVersion.VERSION_1_7
+        targetCompatibility = JavaVersion.VERSION_1_7
+    }
 }
 
 task wrapper(type: Wrapper) {
