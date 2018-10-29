@@ -113,7 +113,17 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         maxInstances: ko.observable(1).extend({required: true, min: 0}),
         preemptible: ko.observable(false),
         machineCustom: self.machineCustom,
-        machineType: ko.observable(),
+        machineType: ko.observable().extend({
+            validation: {
+                validator: function (value) {
+                    return value;
+                },
+                message: "Machine type should not be empty",
+                onlyIf: function () {
+                    return self.imageType() === imageTypes.image && self.machineCustom() === false;
+                }
+            }
+        }),
         machineCores: ko.observable().extend({
             validation: {
                 validator: function (value) {
