@@ -161,7 +161,7 @@
                     </label><br/>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image' && !image().machineCustom">
+            <tr data-bind="if: image().imageType() == 'Image' && !image().machineCustom()">
                 <th class="noBorder"></th>
                 <td>
                     <select name="${cons.machineType}" class="longField ignoreModified"
@@ -170,7 +170,7 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom">
+            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom()">
                 <th class="noBorder">Cores: <l:star/></th>
                 <td>
                     <input type="text" name="${cons.machineCores}" class="longField ignoreModified"
@@ -178,7 +178,7 @@
                     <span class="error option-error" data-bind="validationMessage: image().machineCores"></span>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom">
+            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom()">
                 <th class="noBorder">Memory in MB: <l:star/></th>
                 <td>
                     <input type="text" name="${cons.machineMemory}" class="longField ignoreModified"
@@ -186,7 +186,7 @@
                     <span class="error option-error" data-bind="validationMessage: image().machineMemory"></span>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom">
+            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom()">
                 <th class="noBorder"></th>
                 <td>
                     <input type="checkbox" name="${cons.machineMemoryExt}" class="ignoreModified"
