@@ -17,16 +17,15 @@
 package jetbrains.buildServer.clouds.google.web
 
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.coroutineScope
 import org.jdom.Element
 
 /**
  * Handles networks request.
  */
 internal class ImagesHandler : GoogleResourceHandler() {
-    override fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = async(CommonPool) {
-        val images = connector.getImagesAsync().await()
+    override suspend fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = coroutineScope {
+        val images = connector.getImages()
         val imagesElement = Element("images")
 
         for ((id, displayName) in images) {

@@ -17,16 +17,15 @@
 package jetbrains.buildServer.clouds.google.web
 
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.coroutineScope
 import org.jdom.Element
 
 /**
  * Handles zones request.
  */
 internal class ZonesHandler : GoogleResourceHandler() {
-    override fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = async(CommonPool) {
-        val zones = connector.getZonesAsync().await()
+    override suspend fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = coroutineScope {
+        val zones = connector.getZones()
         val zonesElement = Element("zones")
 
         for ((id, props) in zones) {

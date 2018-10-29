@@ -4,18 +4,16 @@ import jetbrains.buildServer.clouds.CloudInstanceUserData
 import jetbrains.buildServer.clouds.google.GoogleCloudImage
 import jetbrains.buildServer.clouds.google.GoogleCloudInstance
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.CoroutineStart
-import kotlinx.coroutines.experimental.async
-import java.util.ArrayList
+import kotlinx.coroutines.experimental.coroutineScope
+import java.util.*
 
 class GoogleTemplateHandler(private val connector: GoogleApiConnector) : GoogleHandler {
 
-    override fun checkImageAsync(image: GoogleCloudImage) = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun checkImage(image: GoogleCloudImage) = coroutineScope {
         val exceptions = ArrayList<Throwable>()
         exceptions
     }
 
-    override fun createInstanceAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData) =
-        connector.createTemplateInstanceAsync(instance, userData)
+    override suspend fun createInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData) =
+        connector.createTemplateInstance(instance, userData)
 }

@@ -16,14 +16,11 @@
 
 package jetbrains.buildServer.clouds.google.web
 
-import kotlinx.coroutines.experimental.Deferred
 import org.jdom.Content
-
-import javax.servlet.http.HttpServletRequest
 
 /**
  * Request handler.
  */
 internal interface ResourceHandler {
-    fun handle(parameters: Map<String, String>): Deferred<Content>
+    suspend fun handle(parameters: Map<String, String>): Content
 }

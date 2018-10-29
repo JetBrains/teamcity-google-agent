@@ -20,35 +20,34 @@ import jetbrains.buildServer.clouds.CloudInstanceUserData
 import jetbrains.buildServer.clouds.base.connector.CloudApiConnector
 import jetbrains.buildServer.clouds.google.GoogleCloudImage
 import jetbrains.buildServer.clouds.google.GoogleCloudInstance
-import kotlinx.coroutines.experimental.Deferred
 
 /**
  * Google API connector.
  */
 interface GoogleApiConnector : CloudApiConnector<GoogleCloudImage, GoogleCloudInstance> {
-    fun createImageInstanceAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData): Deferred<*>
+    suspend fun createImageInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData)
 
-    fun createTemplateInstanceAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData): Deferred<*>
+    suspend fun createTemplateInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData)
 
-    fun deleteVmAsync(instance: GoogleCloudInstance): Deferred<*>
+    suspend fun deleteVm(instance: GoogleCloudInstance)
 
-    fun restartVmAsync(instance: GoogleCloudInstance): Deferred<*>
+    suspend fun restartVm(instance: GoogleCloudInstance)
 
-    fun startVmAsync(instance: GoogleCloudInstance): Deferred<*>
+    suspend fun startVm(instance: GoogleCloudInstance)
 
-    fun stopVmAsync(instance: GoogleCloudInstance): Deferred<*>
+    suspend fun stopVm(instance: GoogleCloudInstance)
 
-    fun getImagesAsync(): Deferred<Map<String, String>>
+    suspend fun getImages(): Map<String, String>
 
-    fun getTemplatesAsync(): Deferred<Map<String, String>>
+    suspend fun getTemplates(): Map<String, String>
 
-    fun getZonesAsync(): Deferred<Map<String, List<String>>>
+    suspend fun getZones(): Map<String, List<String>>
 
-    fun getMachineTypesAsync(zone: String): Deferred<Map<String, String>>
+    suspend fun getMachineTypes(zone: String): Map<String, String>
 
-    fun getNetworksAsync(): Deferred<Map<String, String>>
+    suspend fun getNetworks(): Map<String, String>
 
-    fun getSubnetsAsync(region: String): Deferred<Map<String, List<String>>>
+    suspend fun getSubnets(region: String): Map<String, List<String>>
 
-    fun getDiskTypesAsync(zone: String): Deferred<Map<String, String>>
+    suspend fun getDiskTypes(zone: String): Map<String, String>
 }

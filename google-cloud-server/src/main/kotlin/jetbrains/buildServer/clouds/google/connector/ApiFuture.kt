@@ -5,6 +5,7 @@ import com.google.api.core.ApiFutureCallback
 import com.google.api.core.ApiFutures
 import com.google.common.util.concurrent.*
 import kotlinx.coroutines.experimental.*
+import java.util.concurrent.ExecutionException
 import kotlin.coroutines.experimental.Continuation
 
 /**
@@ -19,11 +20,20 @@ import kotlin.coroutines.experimental.Continuation
  * care is taken to clear the reference to the waiting coroutine itself, so that its memory can be released even if
  * the future never completes.
  */
-suspend fun <T> ApiFuture<T>.await(): T = suspendCancellableCoroutine { cont: CancellableContinuation<T> ->
-    val callback = ContinuationCallback(cont)
-    ApiFutures.addCallback(this, callback, MoreExecutors.directExecutor())
-    cont.invokeOnCancellation {
-        callback.cont = null // clear the reference to continuation from the future's callback
+suspend fun <T> ApiFuture<T>.await(): T {
+    try {
+        if (isDone) return get() as T
+    } catch (e: ExecutionException) {
+        throw e.cause ?: e // unwrap original cause from ExecutionException
+    }
+
+    return suspendCancellableCoroutine { cont: CancellableContinuation<T> ->
+        val callback = ContinuationCallback(cont)
+        ApiFutures.addCallback(this, callback, MoreExecutors.directExecutor())
+        cont.invokeOnCancellation {
+            cancel(false)
+            callback.cont = null // clear the reference to continuation from the future's callback
+        }
     }
 }
 

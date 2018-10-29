@@ -25,7 +25,6 @@ import jetbrains.buildServer.serverSide.agentPools.AgentPoolManager
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import jetbrains.buildServer.web.openapi.WebControllerManager
 import kotlinx.coroutines.experimental.*
-import org.jdom.Content
 import org.jdom.Element
 import org.springframework.web.servlet.ModelAndView
 import java.io.IOException
@@ -48,15 +47,15 @@ class SettingsController(server: SBuildServer,
 
     init {
         manager.registerController(myHtmlPath, this)
-        myHandlers.put("agentPools", AgentPoolHandler(agentPoolManager))
-        myHandlers.put("zones", ZonesHandler())
-        myHandlers.put("networks", NetworksHandler())
-        myHandlers.put("subnets", SubnetsHandler())
-        myHandlers.put("machineTypes", MachineTypesHandler())
-        myHandlers.put("diskTypes", DiskTypesHandler())
-        myHandlers.put("images", ImagesHandler())
-        myHandlers.put("permissions", PermissionsHandler())
-        myHandlers.put("templates", TemplatesHandler())
+        myHandlers["agentPools"] = AgentPoolHandler(agentPoolManager)
+        myHandlers["zones"] = ZonesHandler()
+        myHandlers["networks"] = NetworksHandler()
+        myHandlers["subnets"] = SubnetsHandler()
+        myHandlers["machineTypes"] = MachineTypesHandler()
+        myHandlers["diskTypes"] = DiskTypesHandler()
+        myHandlers["images"] = ImagesHandler()
+        myHandlers["permissions"] = PermissionsHandler()
+        myHandlers["templates"] = TemplatesHandler()
     }
 
     override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
@@ -77,9 +76,9 @@ class SettingsController(server: SBuildServer,
 
     private fun doGet(request: HttpServletRequest): ModelAndView {
         val mv = ModelAndView(myJspPath)
-        mv.model.put("basePath", myHtmlPath)
-        mv.model.put("resPath", myPluginDescriptor.pluginResourcesPath)
-        mv.model.put("projectId", request.getParameter("projectId"))
+        mv.model["basePath"] = myHtmlPath
+        mv.model["resPath"] = myPluginDescriptor.pluginResourcesPath
+        mv.model["projectId"] = request.getParameter("projectId")
         return mv
     }
 
@@ -89,31 +88,26 @@ class SettingsController(server: SBuildServer,
         val errors = ActionErrors()
         val resources = request.getParameterValues("resource")
         val parameters = request.parameterMap.entries.associate { it.key to (it.value.firstOrNull() ?: "") }
-        val promises = hashMapOf<String, Deferred<Content>>()
         val errorMessages = mutableSetOf<String>()
+        val context = request.startAsync(request, response)
 
-        resources.filterNotNull()
-                .forEach { resource ->
-                    myHandlers[resource]?.let {
-                        try {
-                            promises += resource to it.handle(parameters)
-                        } catch (e: Throwable) {
-                            handleError(e, errorMessages, errors, resource)
+        resources.filterNotNull().map { resource ->
+            return@map async {
+                myHandlers[resource]?.let { handler ->
+                    try {
+                        xmlResponse.addContent(handler.handle(parameters))
+                    } catch (e: Throwable) {
+                        LOG.infoAndDebugDetails(e.message, e)
+                        e.message?.let {
+                            if (!errorMessages.contains(it)) {
+                                errors.addError(resource, it)
+                                errorMessages.add(it)
+                            }
                         }
                     }
                 }
-
-        val context = request.startAsync(request, response)
-        promises.values.forEach{ it -> it.start() }
-
-
-        promises.keys.forEach { resource ->
-            try {
-                xmlResponse.addContent(promises[resource]?.await())
-            } catch (e: Throwable) {
-                handleError(e, errorMessages, errors, resource)
             }
-        }
+        }.awaitAll()
 
         if (errors.hasErrors()) {
             errors.serialize(xmlResponse)
@@ -122,20 +116,6 @@ class SettingsController(server: SBuildServer,
         writeResponse(xmlResponse, context.response)
         context.complete()
     }
-
-    private fun handleError(e: Throwable,
-                            errorMessages: MutableSet<String>,
-                            errors: ActionErrors,
-                            resource: String): Unit? {
-        LOG.infoAndDebugDetails(e.message, e)
-        return e.message?.let {
-            if (!errorMessages.contains(it)) {
-                errors.addError(resource, it)
-                errorMessages.add(it)
-            }
-        }
-    }
-
     companion object {
         private val LOG = Logger.getInstance(SettingsController::class.java.name)
 

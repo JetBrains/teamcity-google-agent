@@ -3,15 +3,14 @@ package jetbrains.buildServer.clouds.google.web
 import com.google.cloud.resourcemanager.ResourceManagerException
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.coroutineScope
 import org.jdom.Element
 
 /**
  * Handles permissions request.
  */
 internal class PermissionsHandler : GoogleResourceHandler() {
-    override fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = async(CommonPool) {
+    override suspend fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = coroutineScope {
         val permissions = Element("permissions")
         try {
             connector.test()
@@ -19,7 +18,7 @@ internal class PermissionsHandler : GoogleResourceHandler() {
             e.message?.let {
                 if (it.contains("Google Cloud Resource Manager API has not been used in project")) {
                     LOG.info(it)
-                    return@async permissions
+                    return@coroutineScope permissions
                 }
             }
             throw e

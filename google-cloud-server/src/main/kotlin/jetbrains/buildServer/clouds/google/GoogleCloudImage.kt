@@ -28,9 +28,8 @@ import jetbrains.buildServer.clouds.google.types.GoogleHandler
 import jetbrains.buildServer.clouds.google.types.GoogleImageHandler
 import jetbrains.buildServer.clouds.google.types.GoogleTemplateHandler
 import jetbrains.buildServer.clouds.google.utils.IdProvider
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.experimental.*
+import kotlin.coroutines.experimental.CoroutineContext
 
 /**
  * Google cloud image.
@@ -38,7 +37,17 @@ import kotlinx.coroutines.experimental.runBlocking
 class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageDetails,
                                    private val myApiConnector: GoogleApiConnector,
                                    private val myIdProvider: IdProvider)
-    : AbstractCloudImage<GoogleCloudInstance, GoogleCloudImageDetails>(myImageDetails.sourceId, myImageDetails.sourceId) {
+    : AbstractCloudImage<GoogleCloudInstance, GoogleCloudImageDetails>(myImageDetails.sourceId, myImageDetails.sourceId),
+DisposableHandle, CoroutineScope {
+
+    private val job = Job()
+
+    override fun dispose() {
+        job.cancel()
+    }
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     private val myImageHandlers = mapOf(
             GoogleCloudImageType.Image to GoogleImageHandler(myApiConnector),
@@ -80,10 +89,10 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
         instance.status = InstanceStatus.SCHEDULED_TO_START
         val data = GoogleUtils.setVmNameForTag(userData, name)
 
-        async(CommonPool) {
+        launch {
             try {
                 LOG.info("Creating new virtual machine ${instance.name}")
-                handler.createInstanceAsync(instance, data).await()
+                handler.createInstance(instance, data)
                 instance.status = InstanceStatus.RUNNING
             } catch (e: Throwable) {
                 LOG.warnAndDebugDetails(e.message, e)
@@ -93,7 +102,7 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
 
                 LOG.info("Removing allocated resources for virtual machine ${instance.name}")
                 try {
-                    myApiConnector.deleteVmAsync(instance).await()
+                    myApiConnector.deleteVm(instance)
                     LOG.info("Allocated resources for virtual machine ${instance.name} have been removed")
                     removeInstance(instance.instanceId)
                 } catch (e: Throwable) {
@@ -111,10 +120,10 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
     override fun restartInstance(instance: GoogleCloudInstance) {
         instance.status = InstanceStatus.RESTARTING
 
-        async(CommonPool) {
+        launch {
             try {
                 LOG.info("Restarting virtual machine ${instance.name}")
-                myApiConnector.restartVmAsync(instance).await()
+                myApiConnector.restartVm(instance)
             } catch (e: Throwable) {
                 LOG.warnAndDebugDetails(e.message, e)
                 instance.status = InstanceStatus.ERROR
@@ -126,14 +135,14 @@ class GoogleCloudImage constructor(private val myImageDetails: GoogleCloudImageD
     override fun terminateInstance(instance: GoogleCloudInstance) {
         instance.status = InstanceStatus.SCHEDULED_TO_STOP
 
-        async(CommonPool) {
+        launch {
             try {
                 if (myImageDetails.behaviour.isDeleteAfterStop) {
                     LOG.info("Removing virtual machine ${instance.name} due to cloud image settings")
-                    myApiConnector.deleteVmAsync(instance).await()
+                    myApiConnector.deleteVm(instance)
                 } else {
                     LOG.info("Stopping virtual machine ${instance.name}")
-                    myApiConnector.stopVmAsync(instance).await()
+                    myApiConnector.stopVm(instance)
                 }
                 instance.status = InstanceStatus.STOPPED
                 LOG.info("Virtual machine ${instance.name} has been successfully terminated")

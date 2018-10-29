@@ -17,16 +17,15 @@
 package jetbrains.buildServer.clouds.google.web
 
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.coroutineScope
 import org.jdom.Element
 
 /**
  * Handles networks request.
  */
 internal class NetworksHandler : GoogleResourceHandler() {
-    override fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = async(CommonPool) {
-        val networks = connector.getNetworksAsync().await()
+    override suspend fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = coroutineScope {
+        val networks = connector.getNetworks()
         val networksElement = Element("networks")
 
         for ((id, displayName) in networks) {

@@ -19,16 +19,15 @@ package jetbrains.buildServer.clouds.google.web
 import jetbrains.buildServer.BuildProject
 import jetbrains.buildServer.serverSide.agentPools.AgentPool
 import jetbrains.buildServer.serverSide.agentPools.AgentPoolManager
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.coroutineScope
 import org.jdom.Element
 import java.lang.reflect.Method
 
 /**
  * Handles agent pools request.
  */
-internal class AgentPoolHandler(val agentPoolManager: AgentPoolManager) : ResourceHandler {
-    override fun handle(parameters: Map<String, String>) = async(CommonPool) {
+internal class AgentPoolHandler(private val agentPoolManager: AgentPoolManager) : ResourceHandler {
+    override suspend fun handle(parameters: Map<String, String>) = coroutineScope {
         val projectId: String? = parameters["projectId"]
         val agentPoolsElement = Element("agentPools")
 

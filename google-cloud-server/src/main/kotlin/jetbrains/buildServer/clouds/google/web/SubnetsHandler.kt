@@ -18,17 +18,16 @@ package jetbrains.buildServer.clouds.google.web
 
 import jetbrains.buildServer.clouds.google.GoogleConstants
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.coroutineScope
 import org.jdom.Element
 
 /**
  * Handles sub networks request.
  */
 internal class SubnetsHandler : GoogleResourceHandler() {
-    override fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = async(CommonPool) {
+    override suspend fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = coroutineScope {
         val region = parameters[GoogleConstants.REGION]!!
-        val subnets = connector.getSubnetsAsync(region).await()
+        val subnets = connector.getSubnets(region)
         val subnetsElement = Element("subnets")
 
         for ((id, props) in subnets) {

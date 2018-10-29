@@ -21,14 +21,13 @@ import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnectorImpl
 import jetbrains.buildServer.clouds.google.utils.PluginPropertiesUtil
 import jetbrains.buildServer.controllers.BasePropertiesBean
-import kotlinx.coroutines.experimental.Deferred
 import org.jdom.Content
 
 /**
  * Google resource handler.
  */
 internal abstract class GoogleResourceHandler : ResourceHandler {
-    override fun handle(parameters: Map<String, String>): Deferred<Content> {
+    override suspend fun handle(parameters: Map<String, String>): Content {
         val propsBean = BasePropertiesBean(null)
         PluginPropertiesUtil.bindPropertiesFromRequest(parameters, propsBean, true)
 
@@ -44,5 +43,5 @@ internal abstract class GoogleResourceHandler : ResourceHandler {
         return handle(apiConnector, parameters)
     }
 
-    protected abstract fun handle(connector: GoogleApiConnector, parameters: Map<String, String>): Deferred<Content>
+    protected abstract suspend fun handle(connector: GoogleApiConnector, parameters: Map<String, String>): Content
 }

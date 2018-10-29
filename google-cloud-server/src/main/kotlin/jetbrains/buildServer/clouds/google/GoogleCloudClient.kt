@@ -35,4 +35,11 @@ class GoogleCloudClient(params: CloudClientParameters,
         val idProvider = FileIdProvider(File(googleIdxStorage, imageDetails.sourceId + ".idx"))
         return GoogleCloudImage(imageDetails, myApiConnector as GoogleApiConnector, idProvider)
     }
+
+    override fun dispose() {
+        super.dispose()
+        images.forEach { image ->
+            image.dispose()
+        }
+    }
 }

@@ -19,10 +19,7 @@ import jetbrains.buildServer.clouds.google.GoogleCloudInstance
 import jetbrains.buildServer.clouds.google.GoogleConstants
 import jetbrains.buildServer.clouds.google.utils.AlphaNumericStringComparator
 import jetbrains.buildServer.util.StringUtil
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.CoroutineStart
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.experimental.*
 
 class GoogleApiConnectorImpl : GoogleApiConnector {
 
@@ -69,7 +66,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         }
     }
 
-    override fun createImageInstanceAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun createImageInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = coroutineScope {
         val details = instance.image.imageDetails
         val zone = details.zone
         val network = details.network ?: "default"
@@ -150,9 +147,10 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .setInstanceResource(instanceInfo)
                 .build())
                 .await()
+        Unit
     }
 
-    override fun createTemplateInstanceAsync(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun createTemplateInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = coroutineScope {
         val details = instance.image.imageDetails
         val zone = details.zone
 
@@ -171,6 +169,8 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .setInstanceResource(instanceInfo)
                 .build())
                 .await()
+
+        Unit
     }
 
     private fun getInstanceBuilder(instance: GoogleCloudInstance): Instance.Builder {
@@ -193,36 +193,40 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 }).build()
     }
 
-    override fun startVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun startVm(instance: GoogleCloudInstance) = coroutineScope {
         instanceClient.startInstanceCallable()
                 .futureCall(StartInstanceHttpRequest.newBuilder()
                         .setInstance(getInstance(instance))
                         .build())
                 .await()
+        Unit
     }
 
-    override fun restartVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun restartVm(instance: GoogleCloudInstance) = coroutineScope {
         instanceClient.resetInstanceCallable()
                 .futureCall(ResetInstanceHttpRequest.newBuilder()
                         .setInstance(getInstance(instance))
                         .build())
                 .await()
+        Unit
     }
 
-    override fun stopVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun stopVm(instance: GoogleCloudInstance) = coroutineScope {
         instanceClient.stopInstanceCallable()
                 .futureCall(StopInstanceHttpRequest.newBuilder()
                         .setInstance(getInstance(instance))
                         .build())
                 .await()
+        Unit
     }
 
-    override fun deleteVmAsync(instance: GoogleCloudInstance) = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun deleteVm(instance: GoogleCloudInstance) = coroutineScope {
         instanceClient.deleteInstanceCallable()
                 .futureCall(DeleteInstanceHttpRequest.newBuilder()
                         .setInstance(getInstance(instance))
                         .build())
                 .await()
+        Unit
     }
 
     private fun getInstance(instance: GoogleCloudInstance): String {
@@ -230,13 +234,13 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     override fun checkImage(image: GoogleCloudImage) = runBlocking {
-        val errors = image.handler.checkImageAsync(image).await()
+        val errors = image.handler.checkImage(image)
         errors.map { TypedCloudErrorInfo.fromException(it) }.toTypedArray()
     }
 
     override fun checkInstance(instance: GoogleCloudInstance): Array<TypedCloudErrorInfo> = emptyArray()
 
-    override fun getImagesAsync() = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun getImages() = coroutineScope {
         val images = imageClient.listImagesPagedCallable()
                 .futureCall(ListImagesHttpRequest.newBuilder()
                         .setProject(ProjectName.of(myProjectId).toString())
@@ -249,7 +253,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .associate { it -> it.first to it.second }
     }
 
-    override fun getTemplatesAsync() = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun getTemplates() = coroutineScope {
         val templates = instanceTemplateClient.listInstanceTemplatesPagedCallable()
                 .futureCall(ListInstanceTemplatesHttpRequest.newBuilder()
                         .setProject(ProjectName.of(myProjectId).toString())
@@ -262,7 +266,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .associate { it -> it.first to it.second }
     }
 
-    override fun getZonesAsync() = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun getZones() = coroutineScope {
         val zones = zoneClient.listZonesPagedCallable()
                 .futureCall(ListZonesHttpRequest.newBuilder()
                         .setProject(ProjectName.of(myProjectId).toString())
@@ -279,7 +283,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .associate { it -> it.first to it.second }
     }
 
-    override fun getMachineTypesAsync(zone: String) = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun getMachineTypes(zone: String) = coroutineScope {
         val machineTypes = machineTypeClient.listMachineTypesPagedCallable()
                 .futureCall(ListMachineTypesHttpRequest.newBuilder()
                         .setZone(ProjectZoneName.of(myProjectId, zone).toString())
@@ -292,7 +296,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .associate { it -> it.first to it.second }
     }
 
-    override fun getNetworksAsync() = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun getNetworks() = coroutineScope {
         val networks = networkClient.listNetworksPagedCallable()
                 .futureCall(ListNetworksHttpRequest.newBuilder()
                         .setProject(ProjectName.of(myProjectId).toString())
@@ -305,7 +309,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .associate { it -> it.first to it.second }
     }
 
-    override fun getSubnetsAsync(region: String) = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun getSubnets(region: String) = coroutineScope {
         val subNetworks = subNetworkClient.listSubnetworksPagedCallable()
                 .futureCall(ListSubnetworksHttpRequest.newBuilder()
                         .setRegion(ProjectRegionName.of(myProjectId, region).toString())
@@ -322,7 +326,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .associate { it -> it.first to it.second }
     }
 
-    override fun getDiskTypesAsync(zone: String) = async(CommonPool, CoroutineStart.LAZY) {
+    override suspend fun getDiskTypes(zone: String) = coroutineScope {
         val diskTypes = diskTypeClient.listDiskTypesPagedCallable()
                 .futureCall(ListDiskTypesHttpRequest.newBuilder()
                         .setZone(ProjectZoneName.of(myProjectId, zone).toString())
@@ -374,11 +378,10 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                     instances[name] = GoogleInstance(it, zone) as R
 
                     if ("TERMINATED" == it.status) {
-                        @Suppress("DeferredResultUnused")
-                        async(CommonPool) {
+                        GlobalScope.launch(image.coroutineContext) {
                             try {
                                 LOG.info("Removing terminated instance $name")
-                                deleteVmAsync(GoogleCloudInstance(image, it.name, zone)).await()
+                                deleteVm(GoogleCloudInstance(image, it.name, zone))
                             } catch (e: Exception) {
                                 LOG.infoAndDebugDetails("Failed to remove instance $name", e)
                             }
