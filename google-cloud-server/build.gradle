@@ -11,8 +11,6 @@ teamcity {
     }
 }
 
-kotlin { experimental { coroutines 'enable' } }
-
 dependencies {
     agent project(path: ':google-cloud-agent', configuration: 'plugin')
     server project(':google-cloud-common')

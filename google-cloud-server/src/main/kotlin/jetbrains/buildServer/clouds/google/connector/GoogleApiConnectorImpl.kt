@@ -19,7 +19,7 @@ import jetbrains.buildServer.clouds.google.GoogleCloudInstance
 import jetbrains.buildServer.clouds.google.GoogleConstants
 import jetbrains.buildServer.clouds.google.utils.AlphaNumericStringComparator
 import jetbrains.buildServer.util.StringUtil
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.*
 
 class GoogleApiConnectorImpl : GoogleApiConnector {
 

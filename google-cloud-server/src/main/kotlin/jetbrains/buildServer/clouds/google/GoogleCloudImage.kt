@@ -28,8 +28,8 @@ import jetbrains.buildServer.clouds.google.types.GoogleHandler
 import jetbrains.buildServer.clouds.google.types.GoogleImageHandler
 import jetbrains.buildServer.clouds.google.types.GoogleTemplateHandler
 import jetbrains.buildServer.clouds.google.utils.IdProvider
-import kotlinx.coroutines.experimental.*
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Google cloud image.
@@ -47,7 +47,7 @@ DisposableHandle, CoroutineScope {
     }
 
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
+        get() = Dispatchers.Default + job
 
     private val myImageHandlers = mapOf(
             GoogleCloudImageType.Image to GoogleImageHandler(myApiConnector),

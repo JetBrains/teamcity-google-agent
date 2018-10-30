@@ -3,7 +3,7 @@ package jetbrains.buildServer.clouds.google.web
 import com.google.cloud.resourcemanager.ResourceManagerException
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
-import kotlinx.coroutines.experimental.coroutineScope
+import kotlinx.coroutines.coroutineScope
 import org.jdom.Element
 
 /**

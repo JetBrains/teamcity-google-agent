@@ -17,7 +17,7 @@
 package jetbrains.buildServer.clouds.google.web
 
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
-import kotlinx.coroutines.experimental.coroutineScope
+import kotlinx.coroutines.coroutineScope
 import org.jdom.Element
 
 /**

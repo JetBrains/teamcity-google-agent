@@ -19,7 +19,7 @@ package jetbrains.buildServer.clouds.google.web
 import jetbrains.buildServer.BuildProject
 import jetbrains.buildServer.serverSide.agentPools.AgentPool
 import jetbrains.buildServer.serverSide.agentPools.AgentPoolManager
-import kotlinx.coroutines.experimental.coroutineScope
+import kotlinx.coroutines.coroutineScope
 import org.jdom.Element
 import java.lang.reflect.Method
 
