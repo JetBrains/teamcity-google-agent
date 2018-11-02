@@ -29,6 +29,8 @@ The plugin supports Google Compute images to start new instances. You also need 
 * `compute.subnetworks.list`
 * `compute.zones.list`
 
+**Note**: If you're using "Instance template" image type also assign a `Service Account User` role.
+
 To verify whether your service account has all required permissions please enable [Google Cloud Resource Manager API](https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview) in your project.
 
 ### Image Creation
