@@ -320,7 +320,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .map { subNetwork ->
                     val networkId = getResourceId(subNetwork.network, networkClient.settings)
                     val network = ProjectGlobalNetworkName.parse(networkId).network
-                    subNetwork.name to listOf(nonEmpty(subNetwork.description, subNetwork.name), network)
+                    ("regions/$region/subnetworks/" + subNetwork.name) to listOf(nonEmpty(subNetwork.description, subNetwork.name), network)
                 }
                 .sortedWith(compareBy(comparator) { it -> it.second.first() })
                 .associate { it -> it.first to it.second }
