@@ -66,6 +66,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         }
     }
 
+    @Suppress("BlockingMethodInNonBlockingContext")
     override suspend fun createImageInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = coroutineScope {
         val details = instance.image.imageDetails
         val zone = details.zone
@@ -249,8 +250,8 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
         images.iterateAll()
                 .map { it.name to nonEmpty(it.description, it.name) }
-                .sortedWith(compareBy(comparator) { it -> it.second })
-                .associate { it -> it.first to it.second }
+                .sortedWith(compareBy(comparator) { it.second })
+                .associate { it.first to it.second }
     }
 
     override suspend fun getTemplates() = coroutineScope {
@@ -262,8 +263,8 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
         templates.iterateAll()
                 .map { it.name to nonEmpty(it.description, it.name) }
-                .sortedWith(compareBy(comparator) { it -> it.second })
-                .associate { it -> it.first to it.second }
+                .sortedWith(compareBy(comparator) { it.second })
+                .associate { it.first to it.second }
     }
 
     override suspend fun getZones() = coroutineScope {
@@ -279,8 +280,8 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                     val region = ProjectRegionName.parse(regionId).region
                     zone.name to listOf(nonEmpty(zone.description, zone.name), region)
                 }
-                .sortedWith(compareBy(comparator) { it -> it.second.first() })
-                .associate { it -> it.first to it.second }
+                .sortedWith(compareBy(comparator) { it.second.first() })
+                .associate { it.first to it.second }
     }
 
     override suspend fun getMachineTypes(zone: String) = coroutineScope {
@@ -291,9 +292,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .await()
 
         machineTypes.iterateAll()
-                .map { it -> it.name to nonEmpty(it.description, it.name) }
-                .sortedWith(compareBy(comparator) { it -> it.second })
-                .associate { it -> it.first to it.second }
+                .map { it.name to nonEmpty(it.description, it.name) }
+                .sortedWith(compareBy(comparator) { it.second })
+                .associate { it.first to it.second }
     }
 
     override suspend fun getNetworks() = coroutineScope {
@@ -304,9 +305,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .await()
 
         networks.iterateAll()
-                .map { it -> it.name to nonEmpty(it.description, it.name) }
-                .sortedWith(compareBy(comparator) { it -> it.second })
-                .associate { it -> it.first to it.second }
+                .map { it.name to nonEmpty(it.description, it.name) }
+                .sortedWith(compareBy(comparator) { it.second })
+                .associate { it.first to it.second }
     }
 
     override suspend fun getSubnets(region: String) = coroutineScope {
@@ -322,8 +323,8 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                     val network = ProjectGlobalNetworkName.parse(networkId).network
                     subNetwork.name to listOf(nonEmpty(subNetwork.description, subNetwork.name), network)
                 }
-                .sortedWith(compareBy(comparator) { it -> it.second.first() })
-                .associate { it -> it.first to it.second }
+                .sortedWith(compareBy(comparator) { it.second.first() })
+                .associate { it.first to it.second }
     }
 
     override suspend fun getDiskTypes(zone: String) = coroutineScope {
@@ -334,9 +335,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .await()
 
         diskTypes.iterateAll()
-                .map { it -> it.name to nonEmpty(it.description, it.name) }
-                .sortedWith(compareBy(comparator) { it -> it.second })
-                .associate { it -> it.first to it.second }
+                .map { it.name to nonEmpty(it.description, it.name) }
+                .sortedWith(compareBy(comparator) { it.second })
+                .associate { it.first to it.second }
     }
 
     override fun <R : AbstractInstance?> fetchInstances(image: GoogleCloudImage): MutableMap<String, R> {

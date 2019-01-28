@@ -72,7 +72,7 @@ class IdleShutdown(private val myTracker: AgentIdleTimeTracker,
                 "' property with proper shutdown command in the buildAgent.properties file")
 
         for (cmd in shutdownCommands) {
-            LOG.info("Shutting down agent with command: " + cmd)
+            LOG.info("Shutting down agent with command: $cmd")
 
             myRunCommand.runCommand(cmd, RunCommand.LoggerOutputProcessor(LOG, "Shutdown"))
         }
@@ -86,7 +86,7 @@ class IdleShutdown(private val myTracker: AgentIdleTimeTracker,
             }
 
             val os = System.getProperty("os.name")
-            LOG.info("Shutdown instance commands for " + os)
+            LOG.info("Shutdown instance commands for $os")
 
             val info = myConfig.systemInfo
 
@@ -103,6 +103,6 @@ class IdleShutdown(private val myTracker: AgentIdleTimeTracker,
 
     companion object {
         private val LOG = Logger.getInstance(IdleShutdown::class.java.name)
-        private val SHUTDOWN_COMMAND_KEY = "teamcity.agent.shutdown.command"
+        private const val SHUTDOWN_COMMAND_KEY = "teamcity.agent.shutdown.command"
     }
 }

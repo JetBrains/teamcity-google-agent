@@ -49,6 +49,6 @@ class FileIdProvider(private val myStorageFile: File) : IdProvider {
 
     companion object {
         private val LOG = Logger.getInstance(FileIdProvider::class.java.name)
-        private val DEFAULT_ID = 1
+        private const val DEFAULT_ID = 1
     }
 }

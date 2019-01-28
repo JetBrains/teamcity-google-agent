@@ -73,7 +73,7 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
     }
 
     private fun getParameter(params: CloudClientParameters, parameter: String): String {
-        return params.getParameter(parameter) ?: throw RuntimeException(parameter + " must not be empty")
+        return params.getParameter(parameter) ?: throw RuntimeException("$parameter must not be empty")
     }
 
     override fun parseImageData(params: CloudClientParameters): Collection<GoogleCloudImageDetails> {
@@ -84,8 +84,8 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
         return params.cloudImages.map {
             GoogleCloudImageDetails(
                     it.id!!,
-                    it.getParameter(GoogleConstants.IMAGE_TYPE)?.let {
-                        GoogleCloudImageType.valueOf(it)
+                    it.getParameter(GoogleConstants.IMAGE_TYPE)?.let { type ->
+                        GoogleCloudImageType.valueOf(type)
                     },
                     it.getParameter(GoogleConstants.SOURCE_IMAGE),
                     it.getParameter(GoogleConstants.INSTANCE_TEMPLATE),

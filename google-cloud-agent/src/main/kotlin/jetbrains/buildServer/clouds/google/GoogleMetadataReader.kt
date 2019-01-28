@@ -52,33 +52,33 @@ class GoogleMetadataReader(events: EventDispatcher<AgentLifeCycleListener>,
         HttpClients.custom()
                 .useSystemProperties()
                 .setDefaultRequestConfig(requestConfig)
-                .build().use {
-            for (i in 1..MAX_COMPUTE_PING_TRIES) {
-                val response = try {
-                    it.execute(HttpGet(instanceMetadataUrl).apply {
-                        addHeader(GCE_METADATA_HEADER, "Google")
-                    })
-                } catch (ignored: SocketTimeoutException) {
-                    // Ignore logging timeouts which is the expected failure mode in non GCE environments.
-                    continue
-                } catch (e: Exception) {
-                    LOG.info(ERROR_GCE_UNAVAILABLE + "Failed to connect to $metadataServerUrl: ${e.message}")
-                    return@use
-                }
+                .build().use { client ->
+                    for (i in 1..MAX_COMPUTE_PING_TRIES) {
+                        val response = try {
+                            client.execute(HttpGet(instanceMetadataUrl).apply {
+                                addHeader(GCE_METADATA_HEADER, "Google")
+                            })
+                        } catch (ignored: SocketTimeoutException) {
+                            // Ignore logging timeouts which is the expected failure mode in non GCE environments.
+                            continue
+                        } catch (e: Exception) {
+                            LOG.info(ERROR_GCE_UNAVAILABLE + "Failed to connect to $metadataServerUrl: ${e.message}")
+                            return@use
+                        }
 
-                val statusCode = response.statusLine.statusCode
-                if (statusCode != 200) {
-                    LOG.info(ERROR_GCE_UNAVAILABLE + "Failed to connect to $metadataServerUrl: HTTP $statusCode")
-                    return@use
-                }
+                        val statusCode = response.statusLine.statusCode
+                        if (statusCode != 200) {
+                            LOG.info(ERROR_GCE_UNAVAILABLE + "Failed to connect to $metadataServerUrl: HTTP $statusCode")
+                            return@use
+                        }
 
-                if (response.getHeaders(GCE_METADATA_HEADER).any { it.value == "Google" }) {
-                    updateConfiguration(EntityUtils.toString(response.entity))
-                } else {
-                    LOG.info(ERROR_GCE_UNAVAILABLE + "Invalid $GCE_METADATA_HEADER header")
+                        if (response.getHeaders(GCE_METADATA_HEADER).any { it.value == "Google" }) {
+                            updateConfiguration(EntityUtils.toString(response.entity))
+                        } else {
+                            LOG.info(ERROR_GCE_UNAVAILABLE + "Invalid $GCE_METADATA_HEADER header")
+                        }
+                    }
                 }
-            }
-        }
     }
 
     private fun updateConfiguration(json: String) {
@@ -100,15 +100,15 @@ class GoogleMetadataReader(events: EventDispatcher<AgentLifeCycleListener>,
         configuration.name = metadata.name
         configuration.serverUrl = data.serverAddress
 
-        metadata.networkInterfaces.firstOrNull()?.let {
-            it.accessConfigs.firstOrNull()?.let {
+        metadata.networkInterfaces.firstOrNull()?.let { network ->
+            network.accessConfigs.firstOrNull()?.let {
                 LOG.info("Setting external IP address: ${it.externalIp}")
                 configuration.addAlternativeAgentAddress(it.externalIp)
             }
         }
 
         configuration.addConfigurationParameter(GoogleAgentProperties.INSTANCE_NAME, metadata.name)
-        data.customAgentConfigurationParameters.entries.forEach { it ->
+        data.customAgentConfigurationParameters.entries.forEach {
             configuration.addConfigurationParameter(it.key, it.value)
             LOG.info("Added config parameter: ${it.key} => ${it.value}")
         }
