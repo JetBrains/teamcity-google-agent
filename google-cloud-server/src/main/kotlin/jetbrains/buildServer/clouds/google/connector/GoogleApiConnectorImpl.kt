@@ -461,7 +461,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     private fun <T : ClientSettings<T>> getResourceId(value: String, settings: T): String {
-        return "projects/${value.removePrefix(settings.endpoint)}"
+        return value.removePrefix(settings.endpoint)
     }
 
     companion object {
