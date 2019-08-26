@@ -31,7 +31,7 @@
                 <label for="${cons.credentialsKey}">JSON private key</label>
                 <span class="smallNote">Specify private key for service account</span>
                 <br/>
-                <a href="https://console.cloud.google.com/iam-admin/" target="_blank">Open IAM Console</a>
+                <a href="https://console.cloud.google.com/iam-admin/" target="_blank" rel="noopener noreferrer">Open IAM Console</a>
                 <input type="hidden" name="prop:${cons.credentialsType}" value="<c:out value="${credentialsType}"/>"
                        data-bind="initializeValue: credentials().type, value: credentials().type"/>
             </td>
@@ -70,7 +70,7 @@
                     To start cloud build agents you need to assign <em>Compute Engine Instance Admin (v1)</em> and <em>Project Viewer</em> roles.
                     <bs:help urlPrefix="https://cloud.google.com/compute/docs/access/#predefined_compute_engine_roles" file=""/><br/>
                     To verify permissions for service account enable <a href="https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview"
-                       target="_blank">Google Cloud Resource Manager API</a>.
+                       target="_blank" rel="noopener noreferrer">Google Cloud Resource Manager API</a>.
                     <span data-bind="css: {hidden: !loadingResources() && !validatingKey()}">
                         <i class="icon-refresh icon-spin"></i>
                     </span>
