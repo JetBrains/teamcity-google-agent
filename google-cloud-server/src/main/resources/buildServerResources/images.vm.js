@@ -265,9 +265,12 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     self.originalImage = null;
 
     self.showDialog = function (data) {
+        var model = self.image();
+        if (!('minInstances' in data)) {
+            data.minInstances = 0
+        }
         self.originalImage = data;
 
-        var model = self.image();
         var image = data || {
             imageType: imageTypes.image,
             minInstances: 0,
