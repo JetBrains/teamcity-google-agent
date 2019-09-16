@@ -144,9 +144,13 @@
             <tr>
                 <th><label for="${cons.maxInstancesCount}">Instances limit: <l:star/></label></th>
                 <td>
-                    <input type="text" name="${cons.maxInstancesCount}" class="longField ignoreModified"
+                    <input type="text" name="${cons.minInstancesCount}" class="shortField ignoreModified"
+                           data-bind="textInput: image().minInstances"/>
+                    <span class="smallNote">Minimum number of instances that are kept alive at all times</span>
+                    <span class="error option-error" data-bind="validationMessage: image().minInstances"></span><br>
+                    <input type="text" name="${cons.maxInstancesCount}" class="shortField ignoreModified"
                            data-bind="textInput: image().maxInstances"/>
-                    <span class="smallNote">Maximum number of instances which can be started</span>
+                    <span class="smallNote">Maximum number of instances that can be started</span>
                     <span class="error option-error" data-bind="validationMessage: image().maxInstances"></span>
                 </td>
             </tr>

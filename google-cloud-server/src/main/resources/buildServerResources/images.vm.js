@@ -110,6 +110,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             }
         }),
         subnet: ko.observable(),
+        minInstances: ko.observable(0).extend({required: true, min: 0}),
         maxInstances: ko.observable(1).extend({required: true, min: 0}),
         preemptible: ko.observable(false),
         machineCustom: self.machineCustom,
@@ -269,6 +270,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         var model = self.image();
         var image = data || {
             imageType: imageTypes.image,
+            minInstances: 0,
             maxInstances: 1,
             preemptible: false,
             machineCustom: false,
@@ -324,6 +326,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         model.machineMemory(image.machineMemory);
         model.machineMemoryExt(image.machineMemoryExt);
         model.diskType(diskType);
+        model.minInstances(image.minInstances);
         model.maxInstances(image.maxInstances);
         model.preemptible(image.preemptible);
         model.vmNamePrefix(image['source-id']);
@@ -357,6 +360,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             zone: model.zone(),
             network: model.network(),
             subnet: model.subnet(),
+            minInstances: model.minInstances(),
             maxInstances: model.maxInstances(),
             preemptible: model.preemptible(),
             'source-id': model.vmNamePrefix(),
