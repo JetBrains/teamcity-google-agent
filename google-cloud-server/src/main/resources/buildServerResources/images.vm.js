@@ -266,7 +266,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     self.showDialog = function (data) {
         var model = self.image();
-        if (!('minInstances' in data)) {
+        if (!data.hasOwnProperty("minInstances")) {
             data.minInstances = 0
         }
         self.originalImage = data;
