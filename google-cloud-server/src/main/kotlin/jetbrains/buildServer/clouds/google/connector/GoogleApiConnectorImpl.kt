@@ -161,7 +161,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
         val instanceTemplateBuilder = getInstanceTemplate(instance).toBuilder()
         LOG.info("GCP Instance Template: $instanceTemplateBuilder")
-        LOG.info("Instance Template properties captured from GCP: ${instanceTemplateBuilder.getProperties().toBuilder()}")
+        LOG.info("Instance Template properties captured from GCP: ${instanceTemplateBuilder.getProperties()}")
         val instanceTemplateMetadataBuilder = instanceTemplateBuilder
                 .getProperties()
                 .toBuilder()
@@ -174,7 +174,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                         GoogleConstants.TAG_SOURCE to details.sourceId
                 ))?.getItemsList())
 
-        LOG.info("Creating an instance builder from merged metadata: $instanceTemplateMetadataBuilder")
+        LOG.info("Creating an instance builder from merged metadata")
         val instanceInfo = getInstanceBuilder(instance, true)
                 .setMetadata(instanceTemplateMetadataBuilder.build())
                 .build()
