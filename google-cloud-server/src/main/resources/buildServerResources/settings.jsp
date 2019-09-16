@@ -308,7 +308,7 @@
                 <tr>
                     <th class="name">Agent name prefix</th>
                     <th class="name">Cloud image</th>
-                    <th class="name center" title="Maximum number of instances">Limit</th>
+                    <th class="name center" title="Minimum/Maximum number of instances" colspan="2">Instance limits</th>
                     <th class="name center" colspan="2">Actions</th>
                 </tr>
                 </thead>
@@ -323,6 +323,7 @@
                         <span data-bind="text: instanceTemplate.slice(-80), attr: {title: instanceTemplate}"></span>
                         <!-- /ko -->
                     </td>
+                    <td class="center edit" data-bind="text: minInstances"></td>
                     <td class="center edit" data-bind="text: maxInstances"></td>
                     <td class="edit">
                         <a href="#" data-bind="click: $parent.showDialog,
