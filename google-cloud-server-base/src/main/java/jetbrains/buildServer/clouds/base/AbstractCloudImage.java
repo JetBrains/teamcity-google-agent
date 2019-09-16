@@ -87,6 +87,8 @@ public abstract class AbstractCloudImage<T extends AbstractCloudInstance, G exte
     myInstances.put(instance.getInstanceId(), instance);
   }
 
+  public abstract boolean canDeleteExistingInstance();
+
   public abstract boolean canStartNewInstance();
 
   public abstract void terminateInstance(@NotNull final T instance);

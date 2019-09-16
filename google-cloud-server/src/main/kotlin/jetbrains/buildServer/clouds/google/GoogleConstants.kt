@@ -48,6 +48,9 @@ class GoogleConstants {
     val zone: String
         get() = ZONE
 
+    val minInstancesCount: String
+        get() = MIN_INSTANCES_COUNT
+
     val maxInstancesCount: String
         get() = MAX_INSTANCES_COUNT
 
@@ -111,6 +114,7 @@ class GoogleConstants {
         const val REGION = "region"
         const val NETWORK_ID = "network"
         const val SUBNET_ID = "subnet"
+        const val MIN_INSTANCES_COUNT = "minInstances"
         const val MAX_INSTANCES_COUNT = "maxInstances"
         const val MACHINE_CUSTOM = "machineCustom"
         const val MACHINE_TYPE = "machineType"

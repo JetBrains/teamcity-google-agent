@@ -49,6 +49,8 @@ class GoogleCloudImageDetails(
         val machineMemory: String?,
         @SerializedName(GoogleConstants.MACHINE_MEMORY_EXT)
         val machineMemoryExt: Boolean = false,
+        @SerializedName(GoogleConstants.MIN_INSTANCES_COUNT)
+        private val minInstances: Int,
         @SerializedName(GoogleConstants.MAX_INSTANCES_COUNT)
         private val maxInstances: Int,
         @SerializedName(CloudImageParameters.AGENT_POOL_ID_FIELD)
@@ -70,6 +72,10 @@ class GoogleCloudImageDetails(
 
     override fun getSourceId(): String {
         return sourceId
+    }
+
+    override fun getMinInstances(): Int {
+        return minInstances
     }
 
     override fun getMaxInstances(): Int {

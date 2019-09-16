@@ -40,6 +40,11 @@ public class FakeCloudImageDetails implements CloudImagePasswordDetails {
     }
 
     @Override
+    public int getMinInstances() {
+        return 0;
+    }
+
+    @Override
     public int getMaxInstances() {
         return 0;
     }

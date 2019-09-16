@@ -27,6 +27,7 @@ public interface CloudImageDetails {
 
   CloneBehaviour getBehaviour();
 
+  int getMinInstances();
   int getMaxInstances();
 
   String getSourceId();

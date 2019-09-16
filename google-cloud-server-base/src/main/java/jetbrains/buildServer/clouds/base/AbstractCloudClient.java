@@ -87,6 +87,11 @@ public abstract class AbstractCloudClient<G extends AbstractCloudInstance<T>, T 
     instance.getImage().terminateInstance(instance);
   }
 
+  public boolean canDeleteExistingInstance(@NotNull final CloudImage baseImage) {
+    final T image = (T) baseImage;
+    return image.canDeleteExistingInstance();
+  }
+
   public boolean canStartNewInstance(@NotNull final CloudImage baseImage) {
     final T image = (T) baseImage;
     return image.canStartNewInstance();
