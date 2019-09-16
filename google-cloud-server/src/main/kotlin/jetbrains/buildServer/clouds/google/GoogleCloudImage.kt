@@ -65,13 +65,19 @@ DisposableHandle, CoroutineScope {
         }
     }
 
+    override fun canDeleteExistingInstance(): Boolean {
+        return activeInstances.size > myImageDetails.getMinInstances()
+    }
+
     override fun canStartNewInstance(): Boolean {
-        return activeInstances.size < myImageDetails.maxInstances
+        return activeInstances.size < myImageDetails.getMaxInstances()
     }
 
     override fun startNewInstance(userData: CloudInstanceUserData): GoogleCloudInstance = runBlocking {
         if (!canStartNewInstance()) {
-            throw QuotaException("Unable to start more instances. Limit has reached")
+            throw QuotaException(
+                "Unable to start more instances. Configured maximum limit has reached (max: ${myImageDetails.getMaxInstances()})"
+            )
         }
 
         createInstance(userData)
@@ -133,8 +139,13 @@ DisposableHandle, CoroutineScope {
     }
 
     override fun terminateInstance(instance: GoogleCloudInstance) {
-        instance.status = InstanceStatus.SCHEDULED_TO_STOP
+        if (!canDeleteExistingInstance()) {
+            throw QuotaException(
+                "Unable to terminate anymore instances. Configured minimum limit has reached (min: ${myImageDetails.getMinInstances()})"
+            )
+        }
 
+        instance.status = InstanceStatus.SCHEDULED_TO_STOP
         launch {
             try {
                 if (myImageDetails.behaviour.isDeleteAfterStop) {
