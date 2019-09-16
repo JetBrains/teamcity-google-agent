@@ -308,7 +308,7 @@
                 <tr>
                     <th class="name">Agent name prefix</th>
                     <th class="name">Cloud image</th>
-                    <th class="name center" title="Minimum/Maximum number of instances" colspan="2">Instance limits</th>
+                    <th class="name center" title="Minimum/Maximum number of instances" colspan="2">Instance limits (min/max)</th>
                     <th class="name center" colspan="2">Actions</th>
                 </tr>
                 </thead>
