@@ -140,9 +140,10 @@ DisposableHandle, CoroutineScope {
 
     override fun terminateInstance(instance: GoogleCloudInstance) {
         if (!canDeleteExistingInstance()) {
-            throw QuotaException(
+            LOG.info(
                 "Unable to terminate anymore instances. Configured minimum limit has reached (min: ${myImageDetails.getMinInstances()})"
             )
+            return
         }
 
         instance.status = InstanceStatus.SCHEDULED_TO_STOP
