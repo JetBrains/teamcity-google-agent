@@ -252,6 +252,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     self.images_data.subscribe(function (data) {
         var images = ko.utils.parseJson(data || "[]");
         images.forEach(function (image) {
+            image.minInstances = image.minInstances || 0;
             image.imageType = image.imageType || imageTypes.image;
             image.preemptible = getBoolean(image.preemptible);
             image.machineCustom = getBoolean(image.machineCustom);
@@ -266,9 +267,6 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     self.showDialog = function (data) {
         var model = self.image();
-        if (!data.hasOwnProperty("minInstances")) {
-            data.minInstances = 0
-        }
         self.originalImage = data;
 
         var image = data || {
