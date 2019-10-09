@@ -159,9 +159,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         val details = instance.image.imageDetails
         val zone = details.zone
 
+        LOG.info("Fetching Google Instance Template")
         val instanceTemplateBuilder = getInstanceTemplate(instance).toBuilder()
-        LOG.info("GCP Instance Template: $instanceTemplateBuilder")
-        LOG.info("Instance Template properties captured from GCP: ${instanceTemplateBuilder.getProperties()}")
+        LOG.info("Google Instance Template properties captured from GCP")
         val instanceTemplateMetadataBuilder = instanceTemplateBuilder
                 .getProperties()
                 .toBuilder()
