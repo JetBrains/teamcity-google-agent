@@ -159,15 +159,27 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         val details = instance.image.imageDetails
         val zone = details.zone
 
-        val instanceInfo = getInstanceBuilder(instance)
-                .setMetadata(getMetadata(mutableMapOf(
+        LOG.info("Fetching Google Instance Template")
+        val instanceTemplateBuilder = getInstanceTemplate(instance).toBuilder()
+        LOG.info("Google Instance Template properties captured from GCP")
+        val instanceTemplateMetadataBuilder = instanceTemplateBuilder
+                .getProperties()
+                .toBuilder()
+                .getMetadata()
+                .toBuilder()
+                .addAllItems(getMetadata(mutableMapOf(
                         GoogleConstants.TAG_SERVER to myServerId,
                         GoogleConstants.TAG_DATA to userData.serialize(),
                         GoogleConstants.TAG_PROFILE to myProfileId,
                         GoogleConstants.TAG_SOURCE to details.sourceId
-                )))
+                ))?.getItemsList())
+
+        LOG.info("Creating an instance builder from merged metadata")
+        val instanceInfo = getInstanceBuilder(instance, true)
+                .setMetadata(instanceTemplateMetadataBuilder.build())
                 .build()
 
+        LOG.info("Creating instance from Instance Template: ${instanceTemplateBuilder.getName()}")
         instanceClient.insertInstanceCallable().futureCall(InsertInstanceHttpRequest.newBuilder()
                 .setSourceInstanceTemplate(ProjectGlobalInstanceTemplateName.of(details.instanceTemplate, myProjectId).value)
                 .setZone(ProjectZoneName.of(myProjectId, zone).value)
@@ -178,6 +190,15 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         Unit
     }
 
+    private fun getInstanceBuilder(instance: GoogleCloudInstance, fromTemplate: Boolean): Instance.Builder {
+
+        if (fromTemplate)
+            return Instance.newBuilder()
+                    .setName(instance.instanceId)
+
+        return getInstanceBuilder(instance)
+    }
+
     private fun getInstanceBuilder(instance: GoogleCloudInstance): Instance.Builder {
         return Instance.newBuilder()
                 .setName(instance.instanceId)
@@ -186,6 +207,18 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                         .setOnHostMaintenance("TERMINATE")
                         .setPreemptible(instance.image.imageDetails.preemptible)
                         .build())
+    }
+
+    private fun getInstanceTemplate(instance: GoogleCloudInstance): InstanceTemplate {
+        LOG.info("getInstanceTemplate template name: ${instance.image.imageDetails.instanceTemplate}")
+        LOG.info("getInstanceTemplate GCP project ID: $myProjectId")
+        val instanceTemplateName = ProjectGlobalInstanceTemplateName.of(
+                instance.image.imageDetails.instanceTemplate,
+                myProjectId
+        )
+
+        LOG.info("GCP get Instance Template: $instanceTemplateName")
+        return instanceTemplateClient.getInstanceTemplate(instanceTemplateName.toString())
     }
 
     private fun getMetadata(metadata: Map<String, String?>): Metadata? {
