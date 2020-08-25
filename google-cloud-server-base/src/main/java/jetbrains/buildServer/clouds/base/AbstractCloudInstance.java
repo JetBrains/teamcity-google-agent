@@ -46,7 +46,6 @@ public abstract class AbstractCloudInstance<T extends AbstractCloudImage> implem
 
   @NotNull
   private T myImage;
-  private volatile String myImageFamily;
   private final AtomicReference<Date> myStartDate = new AtomicReference<Date>(new Date());
   private final AtomicReference<Date> myStatusUpdateTime = new AtomicReference<>(new Date());
   private final AtomicReference<String> myNetworkIdentify = new AtomicReference<String>();
@@ -97,10 +96,6 @@ public abstract class AbstractCloudInstance<T extends AbstractCloudImage> implem
 
   public void setImage(@NotNull final T image) {
     myImage = image;
-  }
-
-  public void setImageFamily(@NotNull final String imageFamily) {
-    myImageFamily = imageFamily;
   }
 
   @NotNull
