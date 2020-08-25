@@ -88,6 +88,7 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
                         GoogleCloudImageType.valueOf(type)
                     },
                     it.getParameter(GoogleConstants.SOURCE_IMAGE),
+                    it.getParameter(GoogleConstants.SOURCE_IMAGE_FAMILY),
                     it.getParameter(GoogleConstants.INSTANCE_TEMPLATE),
                     it.getParameter(GoogleConstants.ZONE)!!,
                     it.getParameter(GoogleConstants.NETWORK_ID),

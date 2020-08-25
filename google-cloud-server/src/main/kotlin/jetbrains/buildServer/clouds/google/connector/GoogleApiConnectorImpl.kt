@@ -30,6 +30,7 @@ import jetbrains.buildServer.clouds.CloudInstanceUserData
 import jetbrains.buildServer.clouds.base.connector.AbstractInstance
 import jetbrains.buildServer.clouds.base.errors.TypedCloudErrorInfo
 import jetbrains.buildServer.clouds.google.GoogleCloudImage
+import jetbrains.buildServer.clouds.google.GoogleCloudImageType
 import jetbrains.buildServer.clouds.google.GoogleCloudInstance
 import jetbrains.buildServer.clouds.google.GoogleConstants
 import jetbrains.buildServer.clouds.google.utils.AlphaNumericStringComparator
@@ -118,11 +119,20 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
             }
         }
 
+
+        val instanceBootImage = when(details.imageType) {
+            GoogleCloudImageType.Image -> ProjectGlobalImageName.format(details.sourceImage, myProjectId)
+            GoogleCloudImageType.ImageFamily -> ProjectGlobalImageFamilyName.format(details.sourceImageFamily, myProjectId)
+            else -> LOG.warn("Invalid imageType: ${details.imageType}")
+        }
+
+        LOG.info("Creating instance from ${details.imageType}, using source: $instanceBootImage")
+
         val instanceInfo = getInstanceBuilder(instance)
                 .setMachineType(ProjectZoneMachineTypeName.format(machineType, myProjectId, zone))
                 .addDisks(AttachedDisk.newBuilder()
                         .setInitializeParams(AttachedDiskInitializeParams.newBuilder()
-                                .setSourceImage(ProjectGlobalImageName.format(details.sourceImage, myProjectId)
+                                .setSourceImage(instanceBootImage as String?)
                                 .apply {
                                     if (!details.diskType.isNullOrBlank()) {
                                         diskType = ProjectZoneDiskTypeName.format(details.diskType, myProjectId, zone)
@@ -304,6 +314,20 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .map { it.name to formattedName(it.name, it.description) }
                 .sortedWith(compareBy(comparator) { it.second })
                 .associate { it.first to it.second }
+    }
+
+    override suspend fun getImageFamilies() = coroutineScope {
+        val images = imageClient.listImagesPagedCallable()
+                .futureCall(ListImagesHttpRequest.newBuilder()
+                        .setProject(ProjectName.format(myProjectId))
+                        .build())
+                .await()
+
+        images.iterateAll()
+                .filter { it.family != null }
+                .map { it.family }
+                .distinct()
+                .sorted()
     }
 
     override suspend fun getTemplates() = coroutineScope {

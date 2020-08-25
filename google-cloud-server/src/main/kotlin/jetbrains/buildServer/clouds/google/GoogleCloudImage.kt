@@ -25,6 +25,7 @@ import jetbrains.buildServer.clouds.base.connector.AbstractInstance
 import jetbrains.buildServer.clouds.base.errors.TypedCloudErrorInfo
 import jetbrains.buildServer.clouds.google.connector.GoogleApiConnector
 import jetbrains.buildServer.clouds.google.types.GoogleHandler
+import jetbrains.buildServer.clouds.google.types.GoogleImageFamilyHandler
 import jetbrains.buildServer.clouds.google.types.GoogleImageHandler
 import jetbrains.buildServer.clouds.google.types.GoogleTemplateHandler
 import jetbrains.buildServer.clouds.google.utils.IdProvider
@@ -51,6 +52,7 @@ DisposableHandle, CoroutineScope {
 
     private val myImageHandlers = mapOf(
             GoogleCloudImageType.Image to GoogleImageHandler(myApiConnector),
+            GoogleCloudImageType.ImageFamily to GoogleImageFamilyHandler(myApiConnector),
             GoogleCloudImageType.Template to GoogleTemplateHandler(myApiConnector)
     )
 

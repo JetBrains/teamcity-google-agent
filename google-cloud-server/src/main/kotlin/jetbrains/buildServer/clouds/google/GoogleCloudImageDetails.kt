@@ -31,6 +31,8 @@ class GoogleCloudImageDetails(
         val imageType: GoogleCloudImageType?,
         @SerializedName(GoogleConstants.SOURCE_IMAGE)
         val sourceImage: String?,
+        @SerializedName(GoogleConstants.SOURCE_IMAGE_FAMILY)
+        val sourceImageFamily: String?,
         @SerializedName(GoogleConstants.INSTANCE_TEMPLATE)
         val instanceTemplate: String?,
         @SerializedName(GoogleConstants.ZONE)

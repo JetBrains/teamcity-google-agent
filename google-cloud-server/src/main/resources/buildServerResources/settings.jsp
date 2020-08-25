@@ -120,6 +120,16 @@
                     <span class="error option-error" data-bind="validationMessage: image().sourceImage"></span>
                 </td>
             </tr>
+            <tr data-bind="if: image().imageType() == 'ImageFamily'">
+                <th><label for="${cons.sourceImageFamily}">Image family: <l:star/></label></th>
+                <td>
+                    <select name="${cons.sourceImageFamily}" class="longField ignoreModified"
+                            data-bind="options: sourceImageFamilies, optionsCaption: '<Select image family>',
+                             optionsText: 'text', optionsValue: 'id', value: image().sourceImageFamily"></select>
+                    <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
+                    <span class="error option-error" data-bind="validationMessage: image().sourceImageFamily"></span>
+                </td>
+            </tr>
             <tr data-bind="if: image().imageType() == 'Template'">
                 <th><label for="${cons.instanceTemplate}">Instance Template: <l:star/></label></th>
                 <td>
@@ -166,7 +176,7 @@
                     <span class="error option-error" data-bind="validationMessage: image().maxInstances"></span>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image'">
+            <tr data-bind="if: image().imageType() != 'Template'">
                 <th><label for="${cons.machineType}">Machine type:</label></th>
                 <td>
                     <input type="checkbox" name="${cons.machineCustom}" class="ignoreModified"
@@ -177,7 +187,7 @@
                     </label><br/>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image' && !image().machineCustom()">
+            <tr data-bind="if: image().imageType() != 'Template' && !image().machineCustom()">
                 <th class="noBorder"></th>
                 <td>
                     <select name="${cons.machineType}" class="longField ignoreModified"
@@ -186,7 +196,7 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom()">
+            <tr data-bind="if: image().imageType() != 'Template' && image().machineCustom()">
                 <th class="noBorder">Cores: <l:star/></th>
                 <td>
                     <input type="text" name="${cons.machineCores}" class="longField ignoreModified"
@@ -194,7 +204,7 @@
                     <span class="error option-error" data-bind="validationMessage: image().machineCores"></span>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom()">
+            <tr data-bind="if: image().imageType() != 'Template' && image().machineCustom()">
                 <th class="noBorder">Memory in MB: <l:star/></th>
                 <td>
                     <input type="text" name="${cons.machineMemory}" class="longField ignoreModified"
@@ -202,7 +212,7 @@
                     <span class="error option-error" data-bind="validationMessage: image().machineMemory"></span>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image' && image().machineCustom()">
+            <tr data-bind="if: image().imageType() != 'Template' && image().machineCustom()">
                 <th class="noBorder"></th>
                 <td>
                     <input type="checkbox" name="${cons.machineMemoryExt}" class="ignoreModified"
@@ -220,7 +230,7 @@
                     </label>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image'" class="advancedSetting">
+            <tr data-bind="if: image().imageType() != 'Template'" class="advancedSetting">
                 <th><label for="${cons.diskType}">Disk type:</label></th>
                 <td>
                     <select name="${cons.diskType}" class="longField ignoreModified"
@@ -229,7 +239,7 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image'">
+            <tr data-bind="if: image().imageType() != 'Template'">
                 <th><label for="${cons.network}">Network: <l:star/></label></th>
                 <td>
                     <select name="${cons.network}" class="longField ignoreModified"
@@ -242,7 +252,7 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() == 'Image'">
+            <tr data-bind="if: image().imageType() != 'Template'">
                 <th class="noBorder"><label for="${cons.subnet}">Sub network:</label></th>
                 <td>
                     <select name="${cons.subnet}" class="longField ignoreModified"
@@ -251,7 +261,7 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
-            <tr class="advancedSetting" data-bind="if: image().imageType() == 'Image'">
+            <tr class="advancedSetting" data-bind="if: image().imageType() != 'Template'">
                 <th>Service account:</th>
                 <td>
                     <a href="#" data-bind="click: function(data) { showServiceAccount(true) }, visible: !showServiceAccount()">Edit service account</a>
@@ -266,7 +276,7 @@
                     </span>
                 </td>
             </tr>
-            <tr class="advancedSetting" data-bind="css: {hidden: !showServiceAccount()}, if: image().imageType() == 'Image'">
+            <tr class="advancedSetting" data-bind="css: {hidden: !showServiceAccount()}, if: image().imageType() != 'Template'">
                 <th class="noBorder">Scopes:</th>
                 <td>
                     <input type="text" name="${cons.scopes}" class="longField ignoreModified"
@@ -279,7 +289,7 @@
                     </span>
                 </td>
             </tr>
-            <tr class="advancedSetting" data-bind="if: image().imageType() == 'Image'">
+            <tr class="advancedSetting" data-bind="if: image().imageType() != 'Template'">
                 <th><label for="${cons.metadata}">Custom metadata:</label></th>
                 <td>
                     <a href="#" data-bind="click: function(data) { showMetadata(true) }, visible: !showMetadata()">Edit metadata</a>
@@ -319,7 +329,8 @@
                 <thead>
                 <tr>
                     <th class="name">Agent name prefix</th>
-                    <th class="name">Cloud image</th>
+                    <th class="name">Cloud image type</th>
+                    <th class="name">Cloud image source</th>
                     <th class="name center" title="Maximum number of instances">Limit</th>
                     <th class="name center" colspan="2">Actions</th>
                 </tr>
@@ -327,9 +338,13 @@
                 <tbody data-bind="foreach: images">
                 <tr>
                     <td class="nowrap" data-bind="text: $data['source-id']"></td>
+                    <td class="nowrap" data-bind="text: imageType"></td>
                     <td class="nowrap">
                         <!-- ko if: imageType === 'Image' -->
                         <span data-bind="text: sourceImage.slice(-80), attr: {title: sourceImage}"></span>
+                        <!-- /ko -->
+                        <!-- ko if: imageType === 'ImageFamily' -->
+                        <span data-bind="text: sourceImageFamily.slice(-80), attr: {title: sourceImageFamily}"></span>
                         <!-- /ko -->
                         <!-- ko if: imageType === 'Template' -->
                         <span data-bind="text: instanceTemplate.slice(-80), attr: {title: instanceTemplate}"></span>
