@@ -120,6 +120,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         }
 
 
+        @Suppress("IMPLICIT_CAST_TO_ANY")
         val instanceBootImage = when(details.imageType) {
             GoogleCloudImageType.Image -> ProjectGlobalImageName.format(details.sourceImage, myProjectId)
             GoogleCloudImageType.ImageFamily -> ProjectGlobalImageFamilyName.format(details.sourceImageFamily, myProjectId)
