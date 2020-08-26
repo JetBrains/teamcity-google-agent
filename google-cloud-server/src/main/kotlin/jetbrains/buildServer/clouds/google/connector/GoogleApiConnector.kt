@@ -37,9 +37,9 @@ interface GoogleApiConnector : CloudApiConnector<GoogleCloudImage, GoogleCloudIn
 
     suspend fun stopVm(instance: GoogleCloudInstance)
 
-    suspend fun getImages(): Map<String, String>
+    suspend fun getImages(project: String?): Map<String, String>
 
-    suspend fun getImageFamilies(): List<String>
+    suspend fun getImageFamilies(project: String?): List<String>
 
     suspend fun getTemplates(): Map<String, String>
 

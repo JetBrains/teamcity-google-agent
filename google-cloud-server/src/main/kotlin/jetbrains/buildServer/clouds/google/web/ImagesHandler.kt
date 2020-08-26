@@ -25,7 +25,7 @@ import org.jdom.Element
  */
 internal class ImagesHandler : GoogleResourceHandler() {
     override suspend fun handle(connector: GoogleApiConnector, parameters: Map<String, String>) = coroutineScope {
-        val images = connector.getImages()
+        val images = connector.getImages(parameters.getOrDefault("sourceProject", ""))
         val imagesElement = Element("images")
 
         for ((id, displayName) in images) {

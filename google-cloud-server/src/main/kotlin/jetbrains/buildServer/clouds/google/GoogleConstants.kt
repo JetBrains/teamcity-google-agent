@@ -39,6 +39,9 @@ class GoogleConstants {
     val imageType: String
         get() = IMAGE_TYPE
 
+    val sourceProject: String
+        get() = SOURCE_PROJECT
+
     val sourceImage: String
         get() = SOURCE_IMAGE
 
@@ -111,6 +114,7 @@ class GoogleConstants {
         const val CREDENTIALS_KEY = "key"
         const val ACCESS_KEY = Constants.SECURE_PROPERTY_PREFIX + "accessKey"
         const val IMAGE_TYPE = "imageType"
+        const val SOURCE_PROJECT = "sourceProject"
         const val SOURCE_IMAGE = "sourceImage"
         const val SOURCE_IMAGE_FAMILY = "sourceImageFamily"
         const val INSTANCE_TEMPLATE = "instanceTemplate"

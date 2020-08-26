@@ -110,6 +110,15 @@
                     <span class="error option-error" data-bind="text: errorResources"></span>
                 </td>
             </tr>
+            <tr>
+                <th><label for="${cons.sourceProject}">Source Project: </label></th>
+                <td>
+                    <input type="text" name="${cons.sourceProject}" class="longField ignoreModified"
+                           data-bind="textInput: image().sourceProject"/>
+                    <span class="smallNote">The Service Account should be granted 'compute.images.list' permissions</span>
+                    <span class="error option-error" data-bind="validationMessage: image().sourceProject"></span>
+                </td>
+            </tr>
             <tr data-bind="if: image().imageType() == 'Image'">
                 <th><label for="${cons.sourceImage}">Image: <l:star/></label></th>
                 <td>

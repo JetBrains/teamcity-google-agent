@@ -29,6 +29,8 @@ class GoogleCloudImageDetails(
         private val sourceId: String,
         @SerializedName(GoogleConstants.IMAGE_TYPE)
         val imageType: GoogleCloudImageType?,
+        @SerializedName(GoogleConstants.SOURCE_PROJECT)
+        val sourceProject: String?,
         @SerializedName(GoogleConstants.SOURCE_IMAGE)
         val sourceImage: String?,
         @SerializedName(GoogleConstants.SOURCE_IMAGE_FAMILY)
