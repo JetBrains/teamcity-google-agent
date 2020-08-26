@@ -229,6 +229,15 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
+            <tr data-bind="if: image().imageType() == 'Image'" class="advancedSetting">
+                <th><label for="${cons.diskSizeGb}">Disk size in GB:</label></th>
+                <td>
+                    <input type="text" name="${cons.diskSizeGb}" class="ignoreModified"
+                           data-bind="textInput: image().diskSizeGb"/>
+                    <span class="smallNote">It must be a number equal to or greater than the image disk size</span>
+                    <span class="error option-error" data-bind="validationMessage: image().diskSizeGb"></span>
+                </td>
+            </tr>
             <tr data-bind="if: image().imageType() == 'Image'">
                 <th><label for="${cons.network}">Network: <l:star/></label></th>
                 <td>
