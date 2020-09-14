@@ -43,9 +43,9 @@ Then you need to [remove temporary files](https://confluence.jetbrains.com/displ
 
 To specify instance metadata you could the "Custom metadata" property in cloud image settings. It could be useful while defining [startup](https://cloud.google.com/compute/docs/startupscript) and [shutdown](https://cloud.google.com/compute/docs/shutdownscript) scripts.
 
-#### Preemtible instance
+#### Preemptible instance
 
-If you are using preemtible instances you have to specify [shutdown script](https://cloud.google.com/compute/docs/instances/create-start-preemptible-instance#handle_preemption) to gracefully reschedule build from preemted VM on another build agent like that.
+If you are using preemptible instances you have to specify [shutdown script](https://cloud.google.com/compute/docs/instances/create-start-preemptible-instance#handle_preemption) to gracefully reschedule build from preempted VM on another build agent like that.
 
 For Linix instances:
 ```json
