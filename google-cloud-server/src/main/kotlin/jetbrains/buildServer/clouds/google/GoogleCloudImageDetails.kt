@@ -59,6 +59,8 @@ class GoogleCloudImageDetails(
         val preemptible: Boolean = false,
         @SerializedName(GoogleConstants.DISK_TYPE)
         val diskType: String?,
+        @SerializedName(GoogleConstants.DISK_SIZE_GB)
+        val diskSizeGb: String?,
         @SerializedName(GoogleConstants.METADATA)
         val metadata: String?,
         @SerializedName(GoogleConstants.GROWING_ID)

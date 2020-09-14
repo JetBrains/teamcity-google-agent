@@ -150,6 +150,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         }),
         machineMemoryExt: ko.observable(false),
         diskType: ko.observable(),
+        diskSizeGb: ko.observable('').extend({required: false, min: 0}),
         vmNamePrefix: ko.observable('').trimmed().extend({required: true, maxLength: maxLength}).extend({
             validation: {
                 validator: function (value) {
@@ -271,6 +272,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         var image = data || {
             imageType: imageTypes.image,
             maxInstances: 1,
+            diskSizeGb: '',
             preemptible: false,
             machineCustom: false,
             growingId: false
@@ -325,6 +327,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         model.machineMemory(image.machineMemory);
         model.machineMemoryExt(image.machineMemoryExt);
         model.diskType(diskType);
+        model.diskSizeGb(image.diskSizeGb);
         model.maxInstances(image.maxInstances);
         model.preemptible(image.preemptible);
         model.vmNamePrefix(image['source-id']);
@@ -367,6 +370,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             machineMemory: model.machineMemory(),
             machineMemoryExt: model.machineMemoryExt(),
             diskType: model.diskType(),
+            diskSizeGb: model.diskSizeGb(),
             metadata: model.metadata(),
             growingId: model.growingId(),
             serviceAccount: model.serviceAccount(),

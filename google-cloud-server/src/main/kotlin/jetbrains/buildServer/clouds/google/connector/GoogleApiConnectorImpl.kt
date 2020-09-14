@@ -129,6 +129,11 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                                         diskType = ProjectZoneDiskTypeName.of(details.diskType, myProjectId, zone).value
                                     }
                                 }
+                                .apply {
+                                    if (!details.diskSizeGb.isNullOrBlank()) {
+                                        diskSizeGb = details.diskSizeGb
+                                    }
+                                }
                                 .build())
                         .setBoot(true)
                         .setAutoDelete(true)

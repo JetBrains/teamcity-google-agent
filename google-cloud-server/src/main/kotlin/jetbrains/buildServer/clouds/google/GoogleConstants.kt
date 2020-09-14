@@ -75,6 +75,9 @@ class GoogleConstants {
     val diskType: String
         get() = DISK_TYPE
 
+    val diskSizeGb: String
+        get() = DISK_SIZE_GB
+
     val vmNamePrefix: String
         get() = CloudImageParameters.SOURCE_ID_FIELD
 
@@ -118,6 +121,7 @@ class GoogleConstants {
         const val MACHINE_MEMORY = "machineMemory"
         const val MACHINE_MEMORY_EXT = "machineMemoryExt"
         const val DISK_TYPE = "diskType"
+        const val DISK_SIZE_GB = "diskSizeGb"
         const val TAG_SERVER = "teamcityServer"
         const val TAG_DATA = "teamcityData"
         const val TAG_PROFILE = "teamcityProfile"
