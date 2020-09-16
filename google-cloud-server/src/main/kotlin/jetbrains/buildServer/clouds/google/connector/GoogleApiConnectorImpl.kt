@@ -120,10 +120,12 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         }
 
 
+        val instanceBootImageProject = if (details.sourceProject.isNullOrBlank()) myProjectId else details.sourceProject
+
         @Suppress("IMPLICIT_CAST_TO_ANY")
         val instanceBootImage = when(details.imageType) {
-            GoogleCloudImageType.Image -> ProjectGlobalImageName.format(details.sourceImage, details.sourceProject)
-            GoogleCloudImageType.ImageFamily -> ProjectGlobalImageFamilyName.format(details.sourceImageFamily, details.sourceProject)
+            GoogleCloudImageType.Image -> ProjectGlobalImageName.format(details.sourceImage, instanceBootImageProject)
+            GoogleCloudImageType.ImageFamily -> ProjectGlobalImageFamilyName.format(details.sourceImageFamily, instanceBootImageProject)
             else -> LOG.warn("Invalid imageType: ${details.imageType}")
         }
 
