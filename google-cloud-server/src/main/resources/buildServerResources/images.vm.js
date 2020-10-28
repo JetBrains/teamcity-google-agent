@@ -73,11 +73,13 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     var imageTypes = {
         image: 'Image',
+        imageFamily: 'ImageFamily',
         template: 'Template'
     };
 
     self.imageTypes = ko.observableArray([
         {id: imageTypes.image, text: "Image"},
+        {id: imageTypes.imageFamily, text: "Image Family"},
         {id: imageTypes.template, text: "Instance Template"}
     ]);
 
@@ -95,6 +97,13 @@ function GoogleImagesViewModel($, ko, dialog, config) {
                 }
             }
         }),
+       sourceImageFamily: ko.observable().extend({
+           required: {
+               onlyIf: function () {
+                   return self.imageType() === imageTypes.imageFamily
+               }
+           }
+       }),
         instanceTemplate: ko.observable().extend({
             required: {
                 onlyIf: function () {
@@ -106,7 +115,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         network: ko.observable().extend({
             required: {
                 onlyIf: function () {
-                    return self.imageType() === imageTypes.image
+                    return [imageTypes.image, imageTypes.imageFamily].includes(self.imageType())
                 }
             }
         }),
@@ -121,7 +130,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
                 },
                 message: "Machine type should not be empty",
                 onlyIf: function () {
-                    return self.imageType() === imageTypes.image && self.machineCustom() === false;
+                    return [imageTypes.image, imageTypes.imageFamily].includes(self.imageType()) && self.machineCustom() === false;
                 }
             }
         }),
@@ -133,7 +142,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
                 },
                 message: "1 or an even number of vCPUs can be created",
                 onlyIf: function () {
-                    return self.imageType() === imageTypes.image && self.machineCustom() === true;
+                    return [imageTypes.image, imageTypes.imageFamily].includes(self.imageType()) && self.machineCustom() === true;
                 }
             }
         }),
@@ -144,7 +153,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
                 },
                 message: "Total memory must be a multiple of 256 MB",
                 onlyIf: function () {
-                    return self.imageType() === imageTypes.image && self.machineCustom() === true;
+                    return [imageTypes.image, imageTypes.imageFamily].includes(self.imageType()) && self.machineCustom() === true;
                 }
             }
         }),
@@ -208,6 +217,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     // Data from APIs
     self.sourceImages = ko.observableArray([]);
+    self.sourceImageFamilies = ko.observableArray([]);
     self.instanceTemplates = ko.observableArray([]);
     self.zones = ko.observableArray([]);
     self.networks = ko.observableArray([]);
@@ -241,6 +251,15 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         self.image().vmNamePrefix(vmName);
     });
 
+    self.image().sourceImageFamily.subscribe(function (imageFamily) {
+        if (!imageFamily) return;
+
+        // Fill in vm name prefix
+        if (self.image().vmNamePrefix()) return;
+        var vmName = imageFamily.slice(-maxLength);
+        self.image().vmNamePrefix(vmName);
+    });
+
     self.image().zone.subscribe(function (zone) {
         if (!zone) return;
         loadInfoByZone(zone);
@@ -254,6 +273,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         var images = ko.utils.parseJson(data || "[]");
         images.forEach(function (image) {
             image.imageType = image.imageType || imageTypes.image;
+            image.imageFamily = image.imageFamily || "";
             image.preemptible = getBoolean(image.preemptible);
             image.machineCustom = getBoolean(image.machineCustom);
             image.machineMemoryExt = getBoolean(image.machineMemoryExt);
@@ -283,6 +303,13 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             return item.id === sourceImage;
         })) {
             self.sourceImages({id: sourceImage, text: sourceImage});
+        }
+
+        var sourceImageFamily = image.sourceImageFamily;
+        if (sourceImageFamily && !ko.utils.arrayFirst(self.sourceImageFamilies(), function (item) {
+            return item.id === sourceImageFamily;
+        })) {
+            self.sourceImageFamilies({id: sourceImageFamily, text: sourceImageFamily});
         }
 
         var instanceTemplate = image.instanceTemplate;
@@ -315,6 +342,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
         model.imageType(image.imageType);
         model.sourceImage(image.sourceImage);
+        model.sourceImageFamily(image.sourceImageFamily);
         model.instanceTemplate(image.instanceTemplate);
         model.zone(image.zone);
         model.network(network);
@@ -357,6 +385,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         var image = {
             imageType: model.imageType(),
             sourceImage: model.sourceImage(),
+            sourceImageFamily: model.sourceImageFamily(),
             instanceTemplate: model.instanceTemplate(),
             zone: model.zone(),
             network: model.network(),
@@ -416,6 +445,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             "&resource=zones" +
             "&resource=networks" +
             "&resource=images" +
+            "&resource=imageFamilies" +
             "&resource=templates";
 
         $.post(url, getCredentials()).then(function (response) {
@@ -429,6 +459,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             }
 
             self.sourceImages(getSourceImages($response));
+            self.sourceImageFamilies(getSourceImageFamilies($response));
             self.instanceTemplates(getInstanceTemplates($response));
             self.zones(getZones($response));
             self.networks(getNetworks($response));
@@ -605,6 +636,12 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
     function getSourceImages($response) {
         return $response.find("images:eq(0) image").map(function () {
+            return {id: $(this).attr("id"), text: $(this).text()};
+        }).get();
+    }
+
+    function getSourceImageFamilies($response) {
+        return $response.find("imageFamilies:eq(0) imageFamily").map(function () {
             return {id: $(this).attr("id"), text: $(this).text()};
         }).get();
     }

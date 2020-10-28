@@ -39,6 +39,8 @@ interface GoogleApiConnector : CloudApiConnector<GoogleCloudImage, GoogleCloudIn
 
     suspend fun getImages(): Map<String, String>
 
+    suspend fun getImageFamilies(): List<String>
+
     suspend fun getTemplates(): Map<String, String>
 
     suspend fun getZones(): Map<String, List<String>>

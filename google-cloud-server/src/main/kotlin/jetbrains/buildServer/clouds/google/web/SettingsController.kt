@@ -54,6 +54,7 @@ class SettingsController(server: SBuildServer,
         myHandlers["machineTypes"] = MachineTypesHandler()
         myHandlers["diskTypes"] = DiskTypesHandler()
         myHandlers["images"] = ImagesHandler()
+        myHandlers["imageFamilies"] = ImageFamiliesHandler()
         myHandlers["permissions"] = PermissionsHandler()
         myHandlers["templates"] = TemplatesHandler()
     }

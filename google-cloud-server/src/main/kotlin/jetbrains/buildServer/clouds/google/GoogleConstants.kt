@@ -42,6 +42,9 @@ class GoogleConstants {
     val sourceImage: String
         get() = SOURCE_IMAGE
 
+    val sourceImageFamily: String
+        get() = SOURCE_IMAGE_FAMILY
+
     val instanceTemplate: String
         get() = INSTANCE_TEMPLATE
 
@@ -109,6 +112,7 @@ class GoogleConstants {
         const val ACCESS_KEY = Constants.SECURE_PROPERTY_PREFIX + "accessKey"
         const val IMAGE_TYPE = "imageType"
         const val SOURCE_IMAGE = "sourceImage"
+        const val SOURCE_IMAGE_FAMILY = "sourceImageFamily"
         const val INSTANCE_TEMPLATE = "instanceTemplate"
         const val ZONE = "zone"
         const val REGION = "region"
