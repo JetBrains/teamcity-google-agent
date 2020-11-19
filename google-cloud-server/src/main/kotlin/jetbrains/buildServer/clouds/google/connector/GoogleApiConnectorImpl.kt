@@ -120,10 +120,12 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         }
 
 
+        val instanceBootImageProject = if (details.sourceProject.isNullOrBlank()) myProjectId else details.sourceProject
+
         @Suppress("IMPLICIT_CAST_TO_ANY")
         val instanceBootImage = when(details.imageType) {
-            GoogleCloudImageType.Image -> ProjectGlobalImageName.format(details.sourceImage, myProjectId)
-            GoogleCloudImageType.ImageFamily -> ProjectGlobalImageFamilyName.format(details.sourceImageFamily, myProjectId)
+            GoogleCloudImageType.Image -> ProjectGlobalImageName.format(details.sourceImage, instanceBootImageProject)
+            GoogleCloudImageType.ImageFamily -> ProjectGlobalImageFamilyName.format(details.sourceImageFamily, instanceBootImageProject)
             else -> LOG.warn("Invalid imageType: ${details.imageType}")
         }
 
@@ -309,10 +311,11 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
     override fun checkInstance(instance: GoogleCloudInstance): Array<TypedCloudErrorInfo> = emptyArray()
 
-    override suspend fun getImages() = coroutineScope {
+    override suspend fun getImages(project: String?) = coroutineScope {
+        val projectName = if (project.isNullOrBlank()) myProjectId else project
         val images = imageClient.listImagesPagedCallable()
                 .futureCall(ListImagesHttpRequest.newBuilder()
-                        .setProject(ProjectName.format(myProjectId))
+                        .setProject(ProjectName.format(projectName))
                         .build())
                 .await()
 
@@ -322,10 +325,11 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .associate { it.first to it.second }
     }
 
-    override suspend fun getImageFamilies() = coroutineScope {
+    override suspend fun getImageFamilies(project: String?) = coroutineScope {
+        val projectName = if (project.isNullOrBlank()) myProjectId else project
         val images = imageClient.listImagesPagedCallable()
                 .futureCall(ListImagesHttpRequest.newBuilder()
-                        .setProject(ProjectName.format(myProjectId))
+                        .setProject(ProjectName.format(projectName))
                         .build())
                 .await()
 

@@ -33,7 +33,7 @@ class GoogleImageHandler(private val connector: GoogleApiConnector) : GoogleHand
         if (details.sourceImage.isNullOrEmpty()) {
             exceptions.add(CheckedCloudException("Image should not be empty"))
         } else {
-            if (!connector.getImages().containsKey(details.sourceImage)) {
+            if (!connector.getImages(details.sourceProject).containsKey(details.sourceImage)) {
                 exceptions.add(CheckedCloudException("Image does not exist"))
             }
         }

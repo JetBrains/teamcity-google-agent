@@ -33,7 +33,7 @@ class GoogleImageFamilyHandler(private val connector: GoogleApiConnector) : Goog
         if (details.sourceImageFamily.isNullOrEmpty()) {
             exceptions.add(CheckedCloudException("Image Family should not be empty"))
         } else {
-            if (!connector.getImageFamilies().contains(details.sourceImageFamily)) {
+            if (!connector.getImageFamilies(details.sourceProject).contains(details.sourceImageFamily)) {
                 exceptions.add(CheckedCloudException("Image Family does not exist"))
             }
         }

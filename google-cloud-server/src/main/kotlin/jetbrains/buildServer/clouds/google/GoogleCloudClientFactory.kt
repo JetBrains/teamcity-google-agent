@@ -87,6 +87,7 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
                     it.getParameter(GoogleConstants.IMAGE_TYPE)?.let { type ->
                         GoogleCloudImageType.valueOf(type)
                     },
+                    it.getParameter(GoogleConstants.SOURCE_PROJECT),
                     it.getParameter(GoogleConstants.SOURCE_IMAGE),
                     it.getParameter(GoogleConstants.SOURCE_IMAGE_FAMILY),
                     it.getParameter(GoogleConstants.INSTANCE_TEMPLATE),

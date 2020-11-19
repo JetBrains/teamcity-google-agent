@@ -16,6 +16,7 @@
 
 function GoogleImagesViewModel($, ko, dialog, config) {
     var self = this;
+    var timeout = null;
 
     self.loadingResources = ko.observable(false);
     self.loadingResourcesByZone = ko.observable(false);
@@ -89,6 +90,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     var maxLength = 60;
     self.machineCustom = ko.observable(false);
     self.image = ko.validatedObservable({
+        sourceProject: ko.observable(),
         imageType: self.imageType,
         sourceImage: ko.observable().extend({
             required: {
@@ -242,6 +244,17 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         self.showAccessKey(false);
     });
 
+    self.image().sourceProject.subscribe(function (project) {
+        if (!project) return;
+
+        clearTimeout(timeout);
+        // Wait 500ms to ensure that user has finished typing
+        timeout = setTimeout(function() {
+            // Reload image and image family list
+            loadInfoBySourceProject(project);
+        }, 500);
+    })
+
     self.image().sourceImage.subscribe(function (image) {
         if (!image) return;
 
@@ -272,8 +285,9 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     self.images_data.subscribe(function (data) {
         var images = ko.utils.parseJson(data || "[]");
         images.forEach(function (image) {
+            image.sourceProject = image.sourceProject || '';
             image.imageType = image.imageType || imageTypes.image;
-            image.imageFamily = image.imageFamily || "";
+            image.imageFamily = image.imageFamily || '';
             image.preemptible = getBoolean(image.preemptible);
             image.machineCustom = getBoolean(image.machineCustom);
             image.machineMemoryExt = getBoolean(image.machineMemoryExt);
@@ -290,6 +304,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
 
         var model = self.image();
         var image = data || {
+            sourceProject: '',
             imageType: imageTypes.image,
             maxInstances: 1,
             diskSizeGb: '',
@@ -340,6 +355,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             self.networks({id: network, text: network});
         }
 
+        model.sourceProject(image.sourceProject);
         model.imageType(image.imageType);
         model.sourceImage(image.sourceImage);
         model.sourceImageFamily(image.sourceImageFamily);
@@ -383,6 +399,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     self.saveImage = function () {
         var model = self.image();
         var image = {
+            sourceProject: model.sourceProject(),
             imageType: model.imageType(),
             sourceImage: model.sourceImage(),
             sourceImageFamily: model.sourceImageFamily(),
@@ -470,6 +487,44 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             self.loadingResources(false);
         });
     };
+
+    function loadInfoBySourceProject(sourceProject) {
+        if (!self.isValidCredentials()) {
+            return
+        }
+
+        var credentialsType = self.credentials().type();
+        var accessKey = self.credentials().accessKey();
+
+        self.loadingResources(true);
+
+        var url = getBasePath() +
+            "sourceProject=" + sourceProject +
+            "&resource=images" +
+            "&resource=imageFamilies";
+
+        $.post(url, {
+            "prop:credentialsType": credentialsType,
+            "prop:secure:accessKey": accessKey
+        }).then(function (response) {
+            var $response = $(response);
+            var errors = getErrors($response);
+            if (errors) {
+                self.errorResources(errors);
+                return;
+            } else {
+                self.errorResources("");
+            }
+
+            self.sourceImages(getSourceImages($response));
+            self.sourceImageFamilies(getSourceImageFamilies($response));
+        }, function (error) {
+            self.errorResources("Failed to load data: " + error.message);
+            console.log(error);
+        }).always(function () {
+            self.loadingResources(false);
+        });
+    }
 
     function changeSubnets(network, subnet) {
         if (!network) return;
