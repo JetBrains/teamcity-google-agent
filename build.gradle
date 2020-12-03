@@ -22,7 +22,7 @@ ext {
     def correctVersion = project.hasProperty('versionNumber') && property('versionNumber') ==~ /\d+\.\d+\.\d+.*/
     versionNumber = correctVersion ? property('versionNumber') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
     projectIds = ['group': 'teamcity-google-agent', 'version': versionNumber]
-    teamcityVersion = findProperty('teamcityVersion') ?: '2020.1'
+    teamcityVersion = findProperty('teamcityVersion') ?: '2020.2'
 }
 
 group = projectIds.group
@@ -44,7 +44,7 @@ subprojects {
     jar.version = null
 
     compileKotlin {
-        sourceCompatibility = JavaVersion.VERSION_1_7
-        targetCompatibility = JavaVersion.VERSION_1_7
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 }
