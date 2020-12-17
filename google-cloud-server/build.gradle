@@ -30,8 +30,9 @@ teamcity {
 dependencies {
     agent project(path: ':google-cloud-agent', configuration: 'plugin')
     server project(':google-cloud-common')
+    implementation project(':google-cloud-common')
     server project(':google-cloud-server-base')
-    provided project(':google-cloud-server-base')
+    implementation project(':google-cloud-server-base')
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
