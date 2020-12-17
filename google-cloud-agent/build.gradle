@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id 'com.github.rodm.teamcity-agent' version "$teamcityPluginVersion"
+    id 'com.github.rodm.teamcity-agent' version "1.1.1"
 }
 
 teamcity {
@@ -27,14 +27,15 @@ teamcity {
 
 dependencies {
     compile project(':google-cloud-common')
-    compile "com.google.code.gson:gson:$gsonVersion"
-    compile "org.apache.httpcomponents:httpclient:$httpClientVersion"
-
+    compile "org.jetbrains.kotlin:kotlin-stdlib"
+    compile 'com.google.code.gson:gson:2.5'
+    compile 'org.apache.httpcomponents:httpclient:4.3.4'
     provided "org.jetbrains.teamcity:cloud-interface:$teamcityVersion"
     provided "org.jetbrains.teamcity:cloud-shared:$teamcityVersion"
     provided "org.jetbrains.teamcity.internal:agent:$teamcityVersion"
-    testCompile "org.jmock:jmock:$jmockVersion"
-    testCompile "org.jmock:jmock-legacy:$jmockVersion"
+    testCompile 'org.testng:testng:6.8'
+    testCompile 'org.jmock:jmock:2.5.1'
+    testCompile 'org.jmock:jmock-legacy:2.5.1'
 }
 
 agentPlugin.version = null

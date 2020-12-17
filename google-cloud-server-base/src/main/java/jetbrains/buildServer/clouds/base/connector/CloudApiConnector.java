@@ -30,7 +30,6 @@ import java.util.Map;
  *         Date: 7/23/2014
  *         Time: 3:26 PM
  */
-@SuppressWarnings("rawtypes")
 public interface CloudApiConnector<T extends AbstractCloudImage, G extends AbstractCloudInstance> {
 
   void test() throws CheckedCloudException;

@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id 'com.github.rodm.teamcity-server' version "$teamcityPluginVersion"
+    id 'com.github.rodm.teamcity-server' version "1.1.1"
 }
 
 dependencies {
@@ -23,7 +23,8 @@ dependencies {
 
     provided "org.jetbrains.teamcity:cloud-interface:$teamcityVersion"
     provided "org.jetbrains.teamcity:cloud-shared:$teamcityVersion"
-    provided "com.google.code.gson:gson:$gsonVersion"
+    provided 'com.google.code.gson:gson:2.5'
+    testCompile 'org.testng:testng:6.8'
 }
 
 teamcity {

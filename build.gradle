@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
+    id "org.jetbrains.kotlin.jvm" version "1.4.10"
 }
 
 ext {
@@ -38,14 +38,10 @@ allprojects {
 }
 
 subprojects {
-    apply plugin: "org.jetbrains.kotlin.jvm"
+    apply plugin: "kotlin"
+
     test.useTestNG()
     jar.version = null
-
-    dependencies {
-        compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-        testCompile "org.testng:testng:$testngVersion"
-    }
 
     compileKotlin {
         sourceCompatibility = JavaVersion.VERSION_1_8
