@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id 'com.github.rodm.teamcity-server' version "1.1.1"
+    id 'com.github.rodm.teamcity-server' version "$teamcityPluginVersion"
 }
 
 teamcity {
@@ -30,15 +30,14 @@ teamcity {
 dependencies {
     agent project(path: ':google-cloud-agent', configuration: 'plugin')
     server project(':google-cloud-common')
+    compile project(':google-cloud-common')
     server project(':google-cloud-server-base')
-    provided project(':google-cloud-server-base')
+    compile project(':google-cloud-server-base')
 
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
     compile "com.google.cloud:google-cloud-compute:$google_sdk"
     compile "com.google.cloud:google-cloud-resourcemanager:$google_sdk"
     provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
-    testCompile 'org.testng:testng:6.8'
 }
 
 serverPlugin.version = null

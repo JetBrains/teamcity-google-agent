@@ -38,6 +38,7 @@ import org.jetbrains.annotations.Nullable;
  *         Date: 7/22/2014
  *         Time: 1:50 PM
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractCloudImage<T extends AbstractCloudInstance, G extends CloudImageDetails> implements CloudImage, UpdatableCloudErrorProvider {
   protected final UpdatableCloudErrorProvider myErrorProvider = new CloudErrorMap(new DefaultErrorMessageUpdater());
   private final Map<String, T> myInstances = new ConcurrentHashMap<>();
@@ -82,6 +83,7 @@ public abstract class AbstractCloudImage<T extends AbstractCloudInstance, G exte
     myInstances.remove(instanceId);
   }
 
+  @SuppressWarnings("unchecked")
   public void addInstance(@NotNull final T instance) {
     instance.setImage(this);
     myInstances.put(instance.getInstanceId(), instance);
