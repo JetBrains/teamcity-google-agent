@@ -36,6 +36,7 @@ import jetbrains.buildServer.clouds.google.GoogleConstants
 import jetbrains.buildServer.clouds.google.utils.AlphaNumericStringComparator
 import jetbrains.buildServer.util.StringUtil
 import kotlinx.coroutines.*
+import org.bouncycastle.util.encoders.Base64
 
 class GoogleApiConnectorImpl : GoogleApiConnector {
 
@@ -383,32 +384,62 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     override suspend fun getNetworks() = coroutineScope {
-        val networks = networkClient.listNetworksPagedCallable()
-                .futureCall(ListNetworksHttpRequest.newBuilder()
-                        .setProject(ProjectName.format(myProjectId))
-                        .build())
-                .await()
+        val networksMap = mutableMapOf<String, String>()
+        networksMap.putAll(getNetworksForProject(myProjectId))
 
-        networks.iterateAll()
-                .map { it.name to formattedName(it.name, it.description) }
-                .sortedWith(compareBy(comparator) { it.second })
-                .associate { it.first to it.second }
+        getVpcHostProjects().forEach { networksMap.putAll(getNetworksForProject(it.name)) }
+
+        networksMap
+    }
+
+    private suspend fun getVpcHostProjects(): List<Project> {
+        return projectClient.listXpnHostsProjectsCallable()
+            .futureCall(
+                ListXpnHostsProjectsHttpRequest.newBuilder()
+                    .setProject(ProjectName.format(myProjectId))
+                    .build()
+            ).await().itemsList
+    }
+
+    private suspend fun getNetworksForProject(project: String?): Map<String, String> {
+        val networks = networkClient.listNetworksPagedCallable()
+            .futureCall(
+                ListNetworksHttpRequest.newBuilder()
+                    .setProject(ProjectName.format(project))
+                    .build()
+            )
+            .await()
+
+        return networks.iterateAll()
+            .map { it.name to formattedName(it.name, it.description) }
+            .sortedWith(compareBy(comparator) { it.second })
+            .associate { it.first to it.second }
     }
 
     override suspend fun getSubnets(region: String) = coroutineScope {
-        val subNetworks = subNetworkClient.listSubnetworksPagedCallable()
-                .futureCall(ListSubnetworksHttpRequest.newBuilder()
-                        .setRegion(ProjectRegionName.format(myProjectId, region))
-                        .build())
-                .await()
+        val subNetworks = mutableMapOf<String, List<String>>()
+        subNetworks.putAll(getSubnetsForProject(myProjectId, region))
 
-        subNetworks.iterateAll()
-                .map { subNetwork ->
-                    val network = ProjectGlobalNetworkName.parse(subNetwork.network).network
-                    subNetwork.name to listOf(formattedName(subNetwork.name, subNetwork.description), network)
-                }
-                .sortedWith(compareBy(comparator) { it.second.first() })
-                .associate { it.first to it.second }
+        getVpcHostProjects().forEach { subNetworks.putAll(getSubnetsForProject(it.name, region)) }
+
+        subNetworks
+    }
+
+    private suspend fun getSubnetsForProject(project: String?, region: String): Map<String, List<String>> {
+        val subNetworks = subNetworkClient.listSubnetworksPagedCallable()
+            .futureCall(
+                ListSubnetworksHttpRequest.newBuilder()
+                    .setRegion(ProjectRegionName.format(project, region))
+                    .build()
+            ).await()
+
+        return subNetworks.iterateAll()
+            .map { subNetwork ->
+                val network = ProjectGlobalNetworkName.parse(subNetwork.network).network
+                subNetwork.name to listOf(formattedName(subNetwork.name, subNetwork.description), network)
+            }
+            .sortedWith(compareBy(comparator) { it.second.first() })
+            .associate { it.first to it.second }
     }
 
     override suspend fun getDiskTypes(zone: String) = coroutineScope {
@@ -485,6 +516,12 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
     fun setProfileId(profileId: String) {
         myProfileId = profileId
+    }
+
+    private val projectClient: ProjectClient by lazy {
+        ProjectClient.create(ProjectSettings.newBuilder()
+                .setCredentialsProvider(getCredentialsProvider { ProjectSettings.getDefaultServiceScopes() })
+                .build())
     }
 
     private val instanceClient: InstanceClient by lazy {
