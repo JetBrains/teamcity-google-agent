@@ -36,7 +36,6 @@ import jetbrains.buildServer.clouds.google.GoogleConstants
 import jetbrains.buildServer.clouds.google.utils.AlphaNumericStringComparator
 import jetbrains.buildServer.util.StringUtil
 import kotlinx.coroutines.*
-import org.bouncycastle.util.encoders.Base64
 
 class GoogleApiConnectorImpl : GoogleApiConnector {
 
