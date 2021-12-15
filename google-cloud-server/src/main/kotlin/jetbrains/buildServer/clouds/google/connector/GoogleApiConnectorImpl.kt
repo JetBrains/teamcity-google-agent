@@ -397,7 +397,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 ListXpnHostsProjectsHttpRequest.newBuilder()
                     .setProject(ProjectName.format(myProjectId))
                     .build()
-            ).await().itemsList
+            ).await().itemsList ?: listOf()
     }
 
     private suspend fun getNetworksForProject(project: String?): Map<String, String> {
