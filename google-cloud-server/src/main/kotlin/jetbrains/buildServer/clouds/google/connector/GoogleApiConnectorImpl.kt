@@ -86,7 +86,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     override suspend fun createImageInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = coroutineScope {
         val details = instance.image.imageDetails
         val zone = details.zone
-        val network = details.network ?: "default"
+
         val machineType = if (details.machineCustom) {
             "custom-${details.machineCores}-${details.machineMemory}${if (details.machineMemoryExt) "-ext" else ""}"
         } else details.machineType!!
@@ -131,6 +131,27 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
         LOG.info("Creating instance from ${details.imageType}, using source: $instanceBootImage")
 
+        val networkId = details.network ?: "default"
+        val network = findNetwork(networkId)
+        val networkName = network?.selfLink ?: ProjectGlobalNetworkName.format(networkId, myProjectId)
+
+        val networkInterface = NetworkInterface.newBuilder()
+            .setName(networkName)
+            .apply {
+                if (!details.subnet.isNullOrBlank()) {
+                    val region = zone.substring(0, zone.length - 2)
+                    subnetwork = network?.subnetworksList?.find{ it.endsWith(details.subnet)} ?:
+                         ProjectRegionSubnetworkName.format(myProjectId, region, details.subnet)
+                }
+                addAccessConfigs(
+                    AccessConfig.newBuilder()
+                        .setName("external-nat")
+                        .setType("ONE_TO_ONE_NAT")
+                        .build()
+                )
+            }
+            .build()
+
         val instanceInfo = getInstanceBuilder(instance)
                 .setMachineType(ProjectZoneMachineTypeName.format(machineType, myProjectId, zone))
                 .addDisks(AttachedDisk.newBuilder()
@@ -151,22 +172,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                         .setAutoDelete(true)
                         .setType("PERSISTENT")
                         .build())
-                .addNetworkInterfaces(NetworkInterface.newBuilder()
-                        .setName(ProjectGlobalNetworkName.format(network, myProjectId))
-                        .apply {
-                            if (!details.subnet.isNullOrBlank()) {
-                                subnetwork = ProjectRegionSubnetworkName.format(
-                                        myProjectId,
-                                        zone.substring(0, zone.length - 2),
-                                        details.subnet
-                                )
-                            }
-                            addAccessConfigs(AccessConfig.newBuilder()
-                                    .setName("external-nat")
-                                    .setType("ONE_TO_ONE_NAT")
-                                    .build())
-                        }
-                        .build())
+                .addNetworkInterfaces(networkInterface)
                 .setMetadata(getMetadata(metadata))
                 .apply {
                     if (!details.serviceAccount.isNullOrBlank()) {
@@ -382,13 +388,12 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .associate { it.first to it.second }
     }
 
-    override suspend fun getNetworks() = coroutineScope {
-        val networksMap = mutableMapOf<String, String>()
-        networksMap.putAll(getNetworksForProject(myProjectId))
+    private suspend fun <T> withVpcProjects(block: suspend(String) -> List<T>): List<T> {
+        val items = mutableListOf<T>()
+        myProjectId?.let { items.addAll(block(it)) }
 
-        getVpcHostProjects().forEach { networksMap.putAll(getNetworksForProject(it.name)) }
-
-        networksMap
+        getVpcHostProjects().forEach { items.addAll(block(it.name)) }
+        return items
     }
 
     private suspend fun getVpcHostProjects(): List<Project> {
@@ -400,7 +405,14 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
             ).await().itemsList ?: listOf()
     }
 
-    private suspend fun getNetworksForProject(project: String?): Map<String, String> {
+    override suspend fun getNetworks() = coroutineScope {
+        withVpcProjects { getNetworksForProject(it) }
+            .map { it.name to formattedName(it.name, it.description) }
+            .sortedWith(compareBy(comparator) { it.second })
+            .associate { it.first to it.second }
+    }
+
+    private suspend fun getNetworksForProject(project: String): List<Network> {
         val networks = networkClient.listNetworksPagedCallable()
             .futureCall(
                 ListNetworksHttpRequest.newBuilder()
@@ -409,22 +421,22 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
             )
             .await()
 
-        return networks.iterateAll()
-            .map { it.name to formattedName(it.name, it.description) }
-            .sortedWith(compareBy(comparator) { it.second })
+        return networks.iterateAll().toList()
+    }
+
+    private suspend fun findNetwork(name: String): Network? = withVpcProjects { getNetworksForProject(it) }.find { it.name == name }
+
+    override suspend fun getSubnets(region: String) = coroutineScope {
+        withVpcProjects { getSubnetsForProject(it, region) }
+            .map { subNetwork ->
+                val network = ProjectGlobalNetworkName.parse(subNetwork.network).network
+                subNetwork.name to listOf(formattedName(subNetwork.name, subNetwork.description), network)
+            }
+            .sortedWith(compareBy(comparator) { it.second.first() })
             .associate { it.first to it.second }
     }
 
-    override suspend fun getSubnets(region: String) = coroutineScope {
-        val subNetworks = mutableMapOf<String, List<String>>()
-        subNetworks.putAll(getSubnetsForProject(myProjectId, region))
-
-        getVpcHostProjects().forEach { subNetworks.putAll(getSubnetsForProject(it.name, region)) }
-
-        subNetworks
-    }
-
-    private suspend fun getSubnetsForProject(project: String?, region: String): Map<String, List<String>> {
+    private suspend fun getSubnetsForProject(project: String?, region: String): List<Subnetwork> {
         val subNetworks = subNetworkClient.listSubnetworksPagedCallable()
             .futureCall(
                 ListSubnetworksHttpRequest.newBuilder()
@@ -432,13 +444,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                     .build()
             ).await()
 
-        return subNetworks.iterateAll()
-            .map { subNetwork ->
-                val network = ProjectGlobalNetworkName.parse(subNetwork.network).network
-                subNetwork.name to listOf(formattedName(subNetwork.name, subNetwork.description), network)
-            }
-            .sortedWith(compareBy(comparator) { it.second.first() })
-            .associate { it.first to it.second }
+        return subNetworks.iterateAll().toList()
     }
 
     override suspend fun getDiskTypes(zone: String) = coroutineScope {
