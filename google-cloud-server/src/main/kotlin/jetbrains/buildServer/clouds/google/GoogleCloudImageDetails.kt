@@ -69,6 +69,8 @@ class GoogleCloudImageDetails(
         val metadata: String?,
         @SerializedName(GoogleConstants.GROWING_ID)
         val growingId: Boolean = false,
+        @SerializedName(GoogleConstants.EXTERNAL_IP)
+        val externalIP: Boolean = false,
         @SerializedName(GoogleConstants.SERVICE_ACCOUNT)
         val serviceAccount: String?,
         @SerializedName(GoogleConstants.SCOPES)

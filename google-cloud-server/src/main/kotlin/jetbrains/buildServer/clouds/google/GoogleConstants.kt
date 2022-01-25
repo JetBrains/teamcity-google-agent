@@ -102,6 +102,9 @@ class GoogleConstants {
     val growingId: String
         get() = GROWING_ID
 
+    val externalIP: String
+        get() = EXTERNAL_IP
+
     val serviceAccount: String
         get() = SERVICE_ACCOUNT
 
@@ -140,5 +143,6 @@ class GoogleConstants {
         const val GROWING_ID = "growingId"
         const val SERVICE_ACCOUNT = "serviceAccount"
         const val SCOPES = "scopes"
+        const val EXTERNAL_IP = "externalIP"
     }
 }

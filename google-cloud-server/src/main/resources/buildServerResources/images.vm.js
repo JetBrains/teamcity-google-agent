@@ -211,6 +211,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             }
         }),
         growingId: ko.observable(false),
+        externalIP: ko.observable(false),
         serviceAccount: ko.observable(),
         scopes: ko.observable(),
         agentPoolId: ko.observable().extend({required: true}),
@@ -292,6 +293,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             image.machineCustom = getBoolean(image.machineCustom);
             image.machineMemoryExt = getBoolean(image.machineMemoryExt);
             image.growingId = getBoolean(image.growingId);
+            image.externalIP = getBoolean(image.externalIP)
         });
         self.images(images);
     });
@@ -310,7 +312,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             diskSizeGb: '',
             preemptible: false,
             machineCustom: false,
-            growingId: false
+            growingId: false,
+            externalIP: false,
         };
 
         var sourceImage = image.sourceImage;
@@ -377,6 +380,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         model.vmNamePrefix(image['source-id']);
         model.metadata(image.metadata);
         model.growingId(image.growingId);
+        model.externalIP(image.externalIP);
         model.serviceAccount(image.serviceAccount);
         model.scopes(image.scopes);
         model.agentPoolId(image.agent_pool_id);
@@ -419,6 +423,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             diskSizeGb: model.diskSizeGb(),
             metadata: model.metadata(),
             growingId: model.growingId(),
+            externalIP: model.externalIP(),
             serviceAccount: model.serviceAccount(),
             scopes: model.scopes(),
             agent_pool_id: model.agentPoolId(),
