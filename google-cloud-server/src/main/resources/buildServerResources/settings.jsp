@@ -279,6 +279,14 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
                 </td>
             </tr>
+            <tr data-bind="if: image().imageType() != 'Template'">
+                <th class="noBorder"></th>
+                <td>
+                    <input type="checkbox" name="${cons.externalIP}" class="ignoreModified"
+                           data-bind="checked: image().externalIP"/>
+                    <label for="${cons.externalIP}">Add external IP to instance</label>
+                </td>
+            </tr>
             <tr class="advancedSetting" data-bind="if: image().imageType() != 'Template'">
                 <th>Service account:</th>
                 <td>

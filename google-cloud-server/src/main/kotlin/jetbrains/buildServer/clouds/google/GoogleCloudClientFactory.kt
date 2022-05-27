@@ -107,6 +107,7 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
                     it.getParameter(GoogleConstants.DISK_SIZE_GB),
                     it.getParameter(GoogleConstants.METADATA),
                     (it.getParameter(GoogleConstants.GROWING_ID) ?: "").toBoolean(),
+                    (it.getParameter(GoogleConstants.EXTERNAL_IP) ?: "").toBoolean(),
                     it.getParameter(GoogleConstants.SERVICE_ACCOUNT),
                     it.getParameter(GoogleConstants.SCOPES)
             )

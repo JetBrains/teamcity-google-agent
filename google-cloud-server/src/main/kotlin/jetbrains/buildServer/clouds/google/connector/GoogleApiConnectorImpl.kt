@@ -143,12 +143,14 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                     subnetwork = network?.subnetworksList?.find{ it.endsWith(details.subnet)} ?:
                          ProjectRegionSubnetworkName.format(myProjectId, region, details.subnet)
                 }
-                addAccessConfigs(
-                    AccessConfig.newBuilder()
-                        .setName("external-nat")
-                        .setType("ONE_TO_ONE_NAT")
-                        .build()
-                )
+                if (details.externalIP) {
+                    addAccessConfigs(
+                        AccessConfig.newBuilder()
+                            .setName("external-nat")
+                            .setType("ONE_TO_ONE_NAT")
+                            .build()
+                    )
+                }
             }
             .build()
 
