@@ -89,6 +89,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
     // Image details
     var maxLength = 60;
     self.machineCustom = ko.observable(false);
+    self.subnetManually = ko.observable(false);
     self.image = ko.validatedObservable({
         sourceProject: ko.observable(),
         imageType: self.imageType,
@@ -121,7 +122,17 @@ function GoogleImagesViewModel($, ko, dialog, config) {
                 }
             }
         }),
-        subnet: ko.observable(),
+        subnetManually: self.subnetManually,
+        subnetInput: ko.observable().extend({
+            onlyIf: function () {
+                return [imageTypes.image, imageTypes.imageFamily].includes(self.imageType()) && self.subnetManually() === true;
+            }
+        }),
+        subnet: ko.observable().extend({
+            onlyIf: function () {
+                return [imageTypes.image, imageTypes.imageFamily].includes(self.imageType()) && self.subnetManually() === false;
+            }
+        }),
         maxInstances: ko.observable(1).extend({required: true, min: 0}),
         preemptible: ko.observable(false),
         machineCustom: self.machineCustom,
@@ -291,6 +302,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             image.imageFamily = image.imageFamily || '';
             image.preemptible = getBoolean(image.preemptible);
             image.machineCustom = getBoolean(image.machineCustom);
+            image.subnetManually = getBoolean(image.subnetManually);
             image.machineMemoryExt = getBoolean(image.machineMemoryExt);
             image.growingId = getBoolean(image.growingId);
             image.externalIP = getBoolean(image.externalIP)
@@ -312,6 +324,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             diskSizeGb: '',
             preemptible: false,
             machineCustom: false,
+            subnetManually: false,
             growingId: false,
             externalIP: false,
         };
@@ -368,6 +381,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         var subnet = image.subnet;
         changeSubnets(network, subnet);
         model.subnet(subnet);
+        model.subnetManually(image.subnetManually || false);
+        model.subnetInput(image.subnetInput)
         model.machineCustom(image.machineCustom || false);
         model.machineType(machineType);
         model.machineCores(image.machineCores);
@@ -411,6 +426,8 @@ function GoogleImagesViewModel($, ko, dialog, config) {
             zone: model.zone(),
             network: model.network(),
             subnet: model.subnet(),
+            subnetManually: model.subnetManually(),
+            subnetInput: model.subnetInput(),
             maxInstances: model.maxInstances(),
             preemptible: model.preemptible(),
             'source-id': model.vmNamePrefix(),

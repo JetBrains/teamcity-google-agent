@@ -63,6 +63,12 @@ class GoogleConstants {
     val subnet: String
         get() = SUBNET_ID
 
+    val subnetInput: String
+        get() = SUBNET_INPUT_ID
+
+    val subnetManually: String
+        get() = SUBNET_MANUALLY
+
     val machineCustom: String
         get() = MACHINE_CUSTOM
 
@@ -125,6 +131,8 @@ class GoogleConstants {
         const val REGION = "region"
         const val NETWORK_ID = "network"
         const val SUBNET_ID = "subnet"
+        const val SUBNET_INPUT_ID = "subnetInput"
+        const val SUBNET_MANUALLY = "subnetManually"
         const val MAX_INSTANCES_COUNT = "maxInstances"
         const val MACHINE_CUSTOM = "machineCustom"
         const val MACHINE_TYPE = "machineType"
