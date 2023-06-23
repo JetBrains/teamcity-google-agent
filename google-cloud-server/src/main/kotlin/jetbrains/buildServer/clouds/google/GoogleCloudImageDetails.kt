@@ -43,6 +43,10 @@ class GoogleCloudImageDetails(
         val network: String?,
         @SerializedName(GoogleConstants.SUBNET_ID)
         val subnet: String?,
+        @SerializedName(GoogleConstants.SUBNET_INPUT_ID)
+        val subnetInput: String?,
+        @SerializedName(GoogleConstants.SUBNET_MANUALLY)
+        val subnetManually: Boolean = false,
         @SerializedName(GoogleConstants.MACHINE_CUSTOM)
         val machineCustom: Boolean = false,
         @SerializedName(GoogleConstants.MACHINE_TYPE)

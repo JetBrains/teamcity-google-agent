@@ -257,7 +257,7 @@
                     <span class="error option-error" data-bind="validationMessage: image().diskSizeGb"></span>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() != 'Template'">
+            <tr data-bind="if: image().imageType() != 'Template', css: {hidden: image().subnetManually()}">
                 <th><label for="${cons.network}">Network: <l:star/></label></th>
                 <td>
                     <select name="${cons.network}" class="longField ignoreModified"
@@ -270,13 +270,28 @@
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResources()}"></i>
                 </td>
             </tr>
-            <tr data-bind="if: image().imageType() != 'Template'">
+            <tr data-bind="if: image().imageType() != 'Template', css: {hidden: image().subnetManually()}">
                 <th class="noBorder"><label for="${cons.subnet}">Sub network:</label></th>
                 <td>
                     <select name="${cons.subnet}" class="longField ignoreModified"
                             data-bind="options: subnets, optionsText: 'text', optionsValue: 'id',
                              optionsCaption: '<Not specified>', value: image().subnet"></select>
                     <i class="icon-refresh icon-spin" data-bind="css: {invisible: !loadingResourcesByZone()}"></i>
+                </td>
+            </tr>
+            <tr data-bind="if: image().imageType() != 'Template', css: {hidden: !image().subnetManually()}">
+                <th><label for="${cons.subnet}">Sub network:</label></th>
+                <td>
+                    <input type="text" name="${cons.subnetInput}" class="longField ignoreModified"
+                           data-bind="textInput: image().subnetInput"/>
+                    <span class="smallNote">Specify subnetwork URL</span>
+                </td>
+            </tr>
+            <tr data-bind="if: image().imageType() != 'Template'">
+                <th class="noBorder"></th>
+                <td class="noBorder">
+                    <input type="checkbox" name="${cons.subnetManually}" data-bind="checked: image().subnetManually"/>
+                    <label>Specify subnetwork URL manually</label>
                 </td>
             </tr>
             <tr data-bind="if: image().imageType() != 'Template'">

@@ -33,6 +33,21 @@ The plugin supports Google Compute images to start new instances. You also need 
 
 To verify whether your service account has all required permissions please enable [Google Cloud Resource Manager API](https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/overview) in your project.
 
+### Shared VPC permissions configuration
+
+There is 3 ways to configure permissions for shared VPC:
+
+1. In order to see networks and subnetworks in dropdowns in the "Add Image" dialog, you have to add the  `Compute Network User` role to the ServiceAccount under which VMs are created from TeamCity in the Host GCP project with Shared VPC.
+2. You can select a limited number of subnetworks that your ServiceAccount should have access to. In Google Cloud Console go to the Host Project -> Shared VPC tab, select the subnet you want to grant access to and add the `Compute Network User` role to the account. In this case, you won't see networks and subnetworks (except for those that don't require any permissions), but you can specify subnet manually. The subnet must be specified in the following format:
+`projects/[project_id]/regions/[region]/subnetworks/[subnet_id]`
+    ![1.jpg](google-cloud-server/src/main/resources/readme/1.jpg)
+
+    ![2.jpg](google-cloud-server/src/main/resources/readme/2.jpg)
+
+    ![3.jpg](google-cloud-server/src/main/resources/readme/3.jpg)
+
+3. In the case when it is necessary to show some specific subnets, first you need to do p.2, and then add the `Compute Network Viewer` role to the ServiceAccount in IAM to the Host Project with Shared VPC.
+
 ### Image Creation
 
 Before you can start using the integration, you need to create a new cloud image. To do that, create a new cloud instance, install the [TeamCity Build Agent](https://confluence.jetbrains.com/display/TCDL/TeamCity+Integration+with+Cloud+Solutions#TeamCityIntegrationwithCloudSolutions-PreparingavirtualmachinewithaninstalledTeamCityagent) on it and set it to start automatically. You also need to manually point the agent to the existing TeamCity server with the Google Cloud plugin installed to let the build agent download the plugins.

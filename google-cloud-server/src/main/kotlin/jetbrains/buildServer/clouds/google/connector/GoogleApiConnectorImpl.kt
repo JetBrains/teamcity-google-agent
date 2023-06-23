@@ -20,6 +20,8 @@ import com.google.api.client.googleapis.util.Utils
 import com.google.api.client.json.GenericJson
 import com.google.api.gax.core.CredentialsProvider
 import com.google.api.gax.core.FixedCredentialsProvider
+import com.google.api.gax.rpc.PermissionDeniedException
+import com.google.api.gax.rpc.StatusCode
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.ServiceOptions
 import com.google.cloud.compute.v1.*
@@ -29,10 +31,7 @@ import jetbrains.buildServer.clouds.CloudException
 import jetbrains.buildServer.clouds.CloudInstanceUserData
 import jetbrains.buildServer.clouds.base.connector.AbstractInstance
 import jetbrains.buildServer.clouds.base.errors.TypedCloudErrorInfo
-import jetbrains.buildServer.clouds.google.GoogleCloudImage
-import jetbrains.buildServer.clouds.google.GoogleCloudImageType
-import jetbrains.buildServer.clouds.google.GoogleCloudInstance
-import jetbrains.buildServer.clouds.google.GoogleConstants
+import jetbrains.buildServer.clouds.google.*
 import jetbrains.buildServer.clouds.google.utils.AlphaNumericStringComparator
 import jetbrains.buildServer.util.StringUtil
 import kotlinx.coroutines.*
@@ -138,11 +137,14 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         val networkInterface = NetworkInterface.newBuilder()
             .setName(networkName)
             .apply {
-                if (!details.subnet.isNullOrBlank()) {
+                if (details.subnetManually && !details.subnetInput.isNullOrBlank()) {
+                    subnetwork = parseSubnetFromURL(details.subnetInput)
+                } else if (!details.subnet.isNullOrBlank()) {
                     val region = zone.substring(0, zone.length - 2)
                     subnetwork = network?.subnetworksList?.find{ it.endsWith(details.subnet)} ?:
-                         ProjectRegionSubnetworkName.format(myProjectId, region, details.subnet)
+                            ProjectRegionSubnetworkName.format(myProjectId, region, details.subnet)
                 }
+
                 if (details.externalIP) {
                     addAccessConfigs(
                         AccessConfig.newBuilder()
@@ -229,6 +231,15 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .await()
 
         Unit
+    }
+
+    private fun parseSubnetFromURL(subnetURL: String): String {
+        // Subnet URL: projects/[project ID]/regions/[region]/subnetworks/[subnet]
+        val (projectID, region, subnet) = subnetURL
+            .split("/")
+            .slice(1..5 step 2)
+
+        return ProjectRegionSubnetworkName.format(projectID, region, subnet)
     }
 
     private fun getInstanceBuilder(instance: GoogleCloudInstance, fromTemplate: Boolean): Instance.Builder {
@@ -390,21 +401,21 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .associate { it.first to it.second }
     }
 
-    private suspend fun <T> withVpcProjects(block: suspend(String) -> List<T>): List<T> {
+    private suspend fun <T> withVpcProjects(block: suspend (String) -> List<T>): List<T> {
         val items = mutableListOf<T>()
-        myProjectId?.let { items.addAll(block(it)) }
 
-        getVpcHostProjects().forEach { items.addAll(block(it.name)) }
+        myProjectId?.let { items.addAll(block(it)) }
+        getVpcHostProjects().let { items.addAll(block(it.name)) }
+
         return items
     }
 
-    private suspend fun getVpcHostProjects(): List<Project> {
-        return projectClient.listXpnHostsProjectsCallable()
-            .futureCall(
-                ListXpnHostsProjectsHttpRequest.newBuilder()
-                    .setProject(ProjectName.format(myProjectId))
-                    .build()
-            ).await().itemsList ?: listOf()
+    private suspend fun getVpcHostProjects(): Project {
+        return projectClient.xpnHostProjectCallable.futureCall(
+            GetXpnHostProjectHttpRequest.newBuilder()
+                .setProject(ProjectName.format(myProjectId))
+                .build()
+        ).await()
     }
 
     override suspend fun getNetworks() = coroutineScope {
@@ -415,15 +426,23 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     private suspend fun getNetworksForProject(project: String): List<Network> {
-        val networks = networkClient.listNetworksPagedCallable()
-            .futureCall(
-                ListNetworksHttpRequest.newBuilder()
-                    .setProject(ProjectName.format(project))
-                    .build()
-            )
-            .await()
+        try {
+            val networks = networkClient.listNetworksPagedCallable()
+                .futureCall(
+                    ListNetworksHttpRequest.newBuilder()
+                        .setProject(ProjectName.format(project))
+                        .build()
+                )
+                .await()
 
-        return networks.iterateAll().toList()
+            return networks.iterateAll().toList()
+        } catch (e: PermissionDeniedException) {
+            if (e.statusCode.code == StatusCode.Code.PERMISSION_DENIED) {
+                return emptyList()
+            } else {
+                throw RuntimeException(e.cause)
+            }
+        }
     }
 
     private suspend fun findNetwork(name: String): Network? = withVpcProjects { getNetworksForProject(it) }.find { it.name == name }
@@ -439,14 +458,22 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     private suspend fun getSubnetsForProject(project: String?, region: String): List<Subnetwork> {
-        val subNetworks = subNetworkClient.listSubnetworksPagedCallable()
-            .futureCall(
-                ListSubnetworksHttpRequest.newBuilder()
-                    .setRegion(ProjectRegionName.format(project, region))
-                    .build()
-            ).await()
+        try {
+            val subNetworks = subNetworkClient.listSubnetworksPagedCallable()
+                .futureCall(
+                    ListSubnetworksHttpRequest.newBuilder()
+                        .setRegion(ProjectRegionName.format(project, region))
+                        .build()
+                ).await()
 
-        return subNetworks.iterateAll().toList()
+            return subNetworks.iterateAll().toList()
+        } catch (e: PermissionDeniedException) {
+            if (e.statusCode.code == StatusCode.Code.PERMISSION_DENIED) {
+                return emptyList()
+            } else {
+                throw RuntimeException(e.cause)
+            }
+        }
     }
 
     override suspend fun getDiskTypes(zone: String) = coroutineScope {
