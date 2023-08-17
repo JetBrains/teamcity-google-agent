@@ -405,12 +405,12 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         val items = mutableListOf<T>()
 
         myProjectId?.let { items.addAll(block(it)) }
-        getVpcHostProjects().let { items.addAll(block(it.name)) }
+        getVpcHostProjects()?.let { items.addAll(block(it.name)) }
 
         return items
     }
 
-    private suspend fun getVpcHostProjects(): Project {
+    private suspend fun getVpcHostProjects(): Project? {
         return projectClient.xpnHostProjectCallable.futureCall(
             GetXpnHostProjectHttpRequest.newBuilder()
                 .setProject(ProjectName.format(myProjectId))
