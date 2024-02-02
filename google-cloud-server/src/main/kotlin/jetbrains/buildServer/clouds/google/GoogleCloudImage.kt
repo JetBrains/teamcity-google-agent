@@ -16,6 +16,7 @@
 
 package jetbrains.buildServer.clouds.google
 
+import com.google.api.gax.rpc.InvalidArgumentException
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.clouds.CloudInstanceUserData
 import jetbrains.buildServer.clouds.InstanceStatus
@@ -100,7 +101,11 @@ DisposableHandle, CoroutineScope {
                 LOG.warnAndDebugDetails(e.message, e)
 
                 instance.status = InstanceStatus.ERROR
-                instance.updateErrors(TypedCloudErrorInfo.fromException(e))
+                val errInfo = TypedCloudErrorInfo.fromException(e)
+                instance.updateErrors(errInfo)
+                if (e is InvalidArgumentException) {
+                    updateErrors(errInfo)
+                }
 
                 LOG.info("Removing allocated resources for virtual machine ${instance.name}")
                 try {
