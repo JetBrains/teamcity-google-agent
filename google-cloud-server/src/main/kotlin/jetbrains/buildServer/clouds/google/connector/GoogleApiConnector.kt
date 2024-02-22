@@ -16,6 +16,7 @@
 
 package jetbrains.buildServer.clouds.google.connector
 
+import com.google.cloud.compute.v1.Operation
 import jetbrains.buildServer.clouds.CloudInstanceUserData
 import jetbrains.buildServer.clouds.base.connector.CloudApiConnector
 import jetbrains.buildServer.clouds.google.GoogleCloudImage
@@ -25,9 +26,9 @@ import jetbrains.buildServer.clouds.google.GoogleCloudInstance
  * Google API connector.
  */
 interface GoogleApiConnector : CloudApiConnector<GoogleCloudImage, GoogleCloudInstance> {
-    suspend fun createImageInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData)
+    suspend fun createImageInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData): Operation
 
-    suspend fun createTemplateInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData)
+    suspend fun createTemplateInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData): Operation
 
     suspend fun deleteVm(instance: GoogleCloudInstance)
 

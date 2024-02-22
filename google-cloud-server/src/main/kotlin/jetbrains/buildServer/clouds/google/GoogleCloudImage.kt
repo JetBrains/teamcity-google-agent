@@ -17,6 +17,7 @@
 package jetbrains.buildServer.clouds.google
 
 import com.google.api.gax.rpc.InvalidArgumentException
+import com.google.cloud.compute.v1.Operation
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.clouds.CloudInstanceUserData
 import jetbrains.buildServer.clouds.InstanceStatus
@@ -95,8 +96,8 @@ DisposableHandle, CoroutineScope {
         launch {
             try {
                 LOG.info("Creating new virtual machine ${instance.name}")
-                handler.createInstance(instance, data)
-                instance.status = InstanceStatus.RUNNING
+                val operation = handler.createInstance(instance, data)
+                processOperationResult(instance, operation)
             } catch (e: Throwable) {
                 LOG.warnAndDebugDetails(e.message, e)
 
@@ -122,6 +123,11 @@ DisposableHandle, CoroutineScope {
         addInstance(instance)
 
         return instance
+    }
+
+    private fun processOperationResult(instance: GoogleCloudInstance, operation: Operation) {
+        instance.startOperationId = operation.id
+        instance.status = InstanceStatus.RUNNING
     }
 
     override fun restartInstance(instance: GoogleCloudInstance) {

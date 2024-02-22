@@ -81,8 +81,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         }
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    override suspend fun createImageInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = coroutineScope {
+    override suspend fun createImageInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData): Operation = coroutineScope {
         val details = instance.image.imageDetails
         val zone = details.zone
 
@@ -195,10 +194,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .setInstanceResource(instanceInfo)
                 .build())
                 .await()
-        Unit
     }
 
-    override suspend fun createTemplateInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData) = coroutineScope {
+    override suspend fun createTemplateInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData): Operation = coroutineScope {
         val details = instance.image.imageDetails
         val zone = details.zone
 
@@ -229,8 +227,6 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .setInstanceResource(instanceInfo)
                 .build())
                 .await()
-
-        Unit
     }
 
     private fun parseSubnetFromURL(subnetURL: String): String {
@@ -329,6 +325,27 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     override fun checkInstance(instance: GoogleCloudInstance): Array<TypedCloudErrorInfo> = emptyArray()
+
+    override fun checkStartOperation(instance: GoogleCloudInstance): Array<TypedCloudErrorInfo> = runBlocking {
+        if (instance.startOperationId == null || myProjectId == null) {
+            return@runBlocking emptyArray()
+        }
+
+        val res = getOperation(instance.startOperationId!!, myProjectId!!, instance.zone) ?: return@runBlocking emptyArray()
+
+        if (res.httpErrorMessage != null || res.httpErrorStatusCode != null) {
+            res.error?.errorsList?.map { e ->
+                TypedCloudErrorInfo(
+                    res.operationType,
+                    generalDescriptionFromError(e)
+                )
+            }?.toTypedArray() ?: arrayOf(
+                TypedCloudErrorInfo("Failed to retrieve the errors, check Google Cloud Operations for more info")
+            )
+        } else {
+            emptyArray()
+        }
+    }
 
     override suspend fun getImages(project: String?) = coroutineScope {
         val projectName = if (project.isNullOrBlank()) myProjectId else project
@@ -544,12 +561,30 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         return result
     }
 
+    private fun generalDescriptionFromError(err: Errors?): String {
+        return if (err != null) {
+            "${err.code}: ${err.message}"
+        } else {
+            "Error description unavailable"
+        }
+    }
+
+    private fun getOperation(operationId: String, projectId: String, zone: String): Operation? {
+        return operationsClient.getZoneOperation(ProjectZoneOperationName.of(operationId, projectId, zone))
+    }
+
     fun setServerId(serverId: String?) {
         myServerId = serverId
     }
 
     fun setProfileId(profileId: String) {
         myProfileId = profileId
+    }
+
+    private val operationsClient: ZoneOperationClient by lazy {
+        ZoneOperationClient.create(ZoneOperationSettings.newBuilder()
+            .setCredentialsProvider(getCredentialsProvider { ZoneSettings.getDefaultServiceScopes() })
+            .build())
     }
 
     private val projectClient: ProjectClient by lazy {

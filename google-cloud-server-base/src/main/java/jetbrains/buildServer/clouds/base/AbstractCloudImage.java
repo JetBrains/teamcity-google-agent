@@ -16,6 +16,8 @@
 
 package jetbrains.buildServer.clouds.base;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -43,6 +45,7 @@ public abstract class AbstractCloudImage<T extends AbstractCloudInstance, G exte
   private final Map<String, T> myInstances = new ConcurrentHashMap<>();
   private final String myName;
   private final String myId;
+  private Instant myTimeoutExpiresAt;
 
   protected AbstractCloudImage(String name, String id) {
     myName = name;
@@ -61,6 +64,14 @@ public abstract class AbstractCloudImage<T extends AbstractCloudInstance, G exte
 
   public void updateErrors(TypedCloudErrorInfo... errors) {
     myErrorProvider.updateErrors(errors);
+  }
+
+  public void timeout(Duration duration) {
+    myTimeoutExpiresAt = Instant.now().plus(duration);
+  }
+
+  public boolean isTimedOut() {
+    return myTimeoutExpiresAt != null && Instant.now().isBefore(myTimeoutExpiresAt);
   }
 
   @Nullable

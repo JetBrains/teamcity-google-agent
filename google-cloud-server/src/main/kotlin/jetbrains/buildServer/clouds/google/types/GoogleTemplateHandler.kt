@@ -16,6 +16,7 @@
 
 package jetbrains.buildServer.clouds.google.types
 
+import com.google.cloud.compute.v1.Operation
 import jetbrains.buildServer.clouds.CloudInstanceUserData
 import jetbrains.buildServer.clouds.base.errors.CheckedCloudException
 import jetbrains.buildServer.clouds.google.GoogleCloudImage
@@ -41,6 +42,6 @@ class GoogleTemplateHandler(private val connector: GoogleApiConnector) : GoogleH
         exceptions
     }
 
-    override suspend fun createInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData) =
+    override suspend fun createInstance(instance: GoogleCloudInstance, userData: CloudInstanceUserData): Operation =
         connector.createTemplateInstance(instance, userData)
 }

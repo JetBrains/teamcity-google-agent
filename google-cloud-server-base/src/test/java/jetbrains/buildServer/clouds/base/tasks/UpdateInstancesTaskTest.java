@@ -63,6 +63,12 @@ public class UpdateInstancesTaskTest {
 
       @NotNull
       @Override
+      public TypedCloudErrorInfo[] checkStartOperation(@NotNull AbstractCloudInstance instance) {
+        return new TypedCloudErrorInfo[0];
+      }
+
+      @NotNull
+      @Override
       public Map fetchInstances(@NotNull Collection images) throws CheckedCloudException {
         return null;
       }
