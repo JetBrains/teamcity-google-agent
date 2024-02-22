@@ -31,4 +31,7 @@ public interface CloudApiConnector<T extends AbstractCloudImage, G extends Abstr
 
   @NotNull
   TypedCloudErrorInfo[] checkInstance(@NotNull final G instance);
+
+  @NotNull
+  TypedCloudErrorInfo[] checkStartOperation(@NotNull final G instance);
 }

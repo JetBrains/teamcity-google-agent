@@ -4,6 +4,7 @@ package jetbrains.buildServer.clouds.base.tasks;
 
 import com.intellij.openapi.diagnostic.Logger;
 
+import java.time.Duration;
 import java.util.*;
 
 import jetbrains.buildServer.Used;
@@ -13,6 +14,7 @@ import jetbrains.buildServer.clouds.base.AbstractCloudImage;
 import jetbrains.buildServer.clouds.base.AbstractCloudInstance;
 import jetbrains.buildServer.clouds.base.connector.AbstractInstance;
 import jetbrains.buildServer.clouds.base.connector.CloudApiConnector;
+import jetbrains.buildServer.clouds.base.errors.TypedCloudErrorInfo;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +29,9 @@ public class UpdateInstancesTask<G extends AbstractCloudInstance<T>,
   > implements Runnable {
   private static final Logger LOG = Logger.getInstance(UpdateInstancesTask.class.getName());
 
-  private static final long STUCK_STATUS_TIME = 10 * 60 * 1000l; // 2 minutes;
+  private static final long STUCK_STATUS_TIME = 10 * 60 * 1000L; // 2 minutes;
+  private static final long TIMEOUT_DURATION_MIN = 3;
+  private static final Duration TIMEOUT = Duration.ofMinutes(TIMEOUT_DURATION_MIN);
 
   @NotNull
   protected final CloudApiConnector<T, G> myConnector;
@@ -57,13 +61,16 @@ public class UpdateInstancesTask<G extends AbstractCloudInstance<T>,
   }
 
   public void run() {
-    final Map<InstanceStatus, List<String>> instancesByStatus = new HashMap<InstanceStatus, List<String>>();
+    final Map<InstanceStatus, List<String>> instancesByStatus = new HashMap<>();
     try {
       List<T> goodImages = new ArrayList<>();
       final Collection<T> images = getImages();
       for (final T image : images) {
         image.updateErrors(myConnector.checkImage(image));
         if (image.getErrorInfo() != null) {
+          if (!image.isTimedOut()) {
+            image.updateErrors((TypedCloudErrorInfo[]) null);
+          }
           continue;
         }
         goodImages.add(image);
@@ -87,7 +94,7 @@ public class UpdateInstancesTask<G extends AbstractCloudInstance<T>,
           }
           final InstanceStatus realInstanceStatus = realInstance.getInstanceStatus();
           if (!instancesByStatus.containsKey(realInstanceStatus)) {
-            instancesByStatus.put(realInstanceStatus, new ArrayList<String>());
+            instancesByStatus.put(realInstanceStatus, new ArrayList<>());
           }
           instancesByStatus.get(realInstanceStatus).add(realInstanceName);
 
@@ -100,12 +107,14 @@ public class UpdateInstancesTask<G extends AbstractCloudInstance<T>,
         }
 
         final Collection<G> instances = image.getInstances();
+        List<TypedCloudErrorInfo[]> instanceInsertionErrs = new ArrayList<>(instances.size());
         for (final G cloudInstance : instances) {
           try {
             final String instanceName = cloudInstance.getName();
             final AbstractInstance instance = realInstances.get(instanceName);
             if (instance == null) {
               if (cloudInstance.getStatus() != InstanceStatus.SCHEDULED_TO_START && cloudInstance.getStatus() != InstanceStatus.STARTING) {
+                instanceInsertionErrs.add(myConnector.checkStartOperation(cloudInstance));
                 image.removeInstance(cloudInstance.getInstanceId());
               }
               continue;
@@ -119,9 +128,19 @@ public class UpdateInstancesTask<G extends AbstractCloudInstance<T>,
               cloudInstance.setNetworkIdentify(instance.getIpAddress());
             }
           } catch (Exception ex) {
-            LOG.debug("Error processing VM " + cloudInstance.getName() + ": " + ex.toString());
+            LOG.debug("Error processing VM " + cloudInstance.getName() + ": " + ex);
           }
         }
+
+        TypedCloudErrorInfo[] encounteredErrors = instanceInsertionErrs.stream()
+                .flatMap(Arrays::stream)
+                .toArray(TypedCloudErrorInfo[]::new);
+
+        if (encounteredErrors.length != 0) {
+          image.timeout(TIMEOUT);
+          image.updateErrors(encounteredErrors);
+        }
+
         image.detectNewInstances(realInstances);
       }
       myClient.updateErrors();

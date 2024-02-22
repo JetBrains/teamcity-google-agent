@@ -12,6 +12,7 @@ class GoogleCloudInstance internal constructor(image: GoogleCloudImage, val id: 
     : AbstractCloudInstance<GoogleCloudImage>(image, id, id) {
 
     var properties: MutableMap<String, String> = HashMap()
+    @Volatile var startOperationId: String? = null
 
     override fun containsAgent(agent: AgentDescription): Boolean {
         val agentInstanceName = agent.configurationParameters[GoogleAgentProperties.INSTANCE_NAME]
