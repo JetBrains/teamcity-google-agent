@@ -1,7 +1,7 @@
 
 
 plugins {
-    id 'com.github.rodm.teamcity-server' version "1.1.1"
+    id 'com.github.rodm.teamcity-server' version "1.4.1"
 }
 
 teamcity {
@@ -24,6 +24,8 @@ dependencies {
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
     compile "com.google.cloud:google-cloud-compute:$google_sdk"
     compile "com.google.cloud:google-cloud-resourcemanager:$google_sdk"
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.13.0")
+
     provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
     testCompile 'org.testng:testng:6.8'
 }
