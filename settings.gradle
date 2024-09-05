@@ -1,5 +1,3 @@
-
-
 rootProject.name = 'teamcity-google-agent'
 
 include 'google-cloud-agent'
