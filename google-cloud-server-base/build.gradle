@@ -1,5 +1,3 @@
-
-
 plugins {
     id 'com.github.rodm.teamcity-server' version "1.4.1"
 }
