@@ -4,21 +4,22 @@
 [![plugin status]( 
 https://teamcity.jetbrains.com/app/rest/builds/buildType:(id:TeamCityGoogleCloudAgent_Build)/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=TeamCityGoogleCloudAgent_Build&guest=1)
 
-TeamCity integration with Google Compute Engine which allows using cloud instances to scale the pool of build agents.
+This plugin allows TeamCity to scale the pool of build agents using cloud instances hosted in Google Compute Engine.
 
 ## Compatibility
 
-The plugin is compatible with TeamCity 10.0.x and greater.
+The plugin is compatible with TeamCity 10.0.x and newer.
 
 ## Installation
 
-You can [download the plugin](https://plugins.jetbrains.com/plugin/9704-google-cloud-agents) and install it as an [additional TeamCity plugin](https://confluence.jetbrains.com/display/TCDL/Installing+Additional+Plugins).
+[Download the plugin](https://plugins.jetbrains.com/plugin/9704-google-cloud-agents) and install it as an [additional TeamCity plugin](https://www.jetbrains.com/help/teamcity/installing-additional-plugins.html).
 
 ## Configuration
 
 For configuration details please take a look at the [TeamCity Google Cloud plugins](https://blog.jetbrains.com/teamcity/2017/06/run-teamcity-ci-builds-in-google-cloud/) blog post.
 
 The plugin supports Google Compute images to start new instances. You also need to create a new JSON private key and assign the `Compute Engine Instance Admin (v1)` and `Project Viewer` [roles](https://cloud.google.com/compute/docs/access/#predefined_short_product_name_roles) or create your own with a following permissions:
+
 * `compute.images.list`
 * `compute.instances.create`
 * `compute.instances.list`
@@ -50,17 +51,30 @@ There is 3 ways to configure permissions for shared VPC:
 
 ### Image Creation
 
-Before you can start using the integration, you need to create a new cloud image. To do that, create a new cloud instance, install the [TeamCity Build Agent](https://confluence.jetbrains.com/display/TCDL/TeamCity+Integration+with+Cloud+Solutions#TeamCityIntegrationwithCloudSolutions-PreparingavirtualmachinewithaninstalledTeamCityagent) on it and set it to start automatically. You also need to manually point the agent to the existing TeamCity server with the Google Cloud plugin installed to let the build agent download the plugins.
+Before you can setting up the integration, you need to create a new cloud image. To do that, create a new cloud instance, install the [TeamCity Build Agent](https://www.jetbrains.com/help/teamcity/teamcity-integration-with-cloud-solutions.html) on it and set it to start automatically. You also need to manually point the agent to the existing TeamCity server with the Google Cloud plugin installed to let the build agent download the plugins.
 
-Then you need to [remove temporary files](https://confluence.jetbrains.com/display/TCDL/TeamCity+Integration+with+Cloud+Solutions#TeamCityIntegrationwithCloudSolutions-Capturinganimagefromavirtualmachine) and [create a new image](https://cloud.google.com/compute/docs/images/create-delete-deprecate-private-images) from the instance disk.
+Then you need to [remove temporary files](https://confluence.jetbrains.com/display/TCDL/TeamCity+Integration+with+Cloud+Solutions#TeamCityIntegrationwithCloudSolutions-Capturinganimagefromavirtualmachine) and [create a new image](https://cloud.google.com/compute/docs/images/create-custom) from the instance disk.
 
-### Startup and shutdown scripts
+### Setting Up TeamCity Cloud Profiles and Images
 
-To specify instance metadata you could the "Custom metadata" property in cloud image settings. It could be useful while defining [startup](https://cloud.google.com/compute/docs/startupscript) and [shutdown](https://cloud.google.com/compute/docs/shutdownscript) scripts.
+Once you have a custom Google image that can spawn identical cloud machines with TeamCity agents installed on them, set up TeamCity to be able to use this image. To do this, you need to set up a [cloud profile and an image](https://www.jetbrains.com/help/teamcity/agent-cloud-profile.html).
+
+1. Go to the settings of a project that should be able to use your Google Cloud agents. This can be an individual or the `<Root>` project.
+2. In the left navigation bar, click **Cloud Profiles**. A profile is an entity that specifies global cloud agent properties (such as the server URL, credentials that TeamCity should use to access your images, or the automatic terminate conditions).
+3. Click **Create new profile** and choose "Google Compute Engine" in the **Cloud type** dropdown menu.
+4. Fill in required settings and click **Add image**. An image contains more specific settings than its parent profile: the specific custom image that should be used, the maximum number of instances that can be spawned from this image, network settings, and more. A single cloud profile can host multiple cloud images.
+
+    > Notes
+    > 
+    > * If you're using the "default" network and one of its "default" subnetworks, tick the "Specify subnetwork URL manually" checkbox in TeamCity cloud image settings. This checkbox allows you to explicitly specify the required network and avoid issues related to TeamCity attempting to access a network of a wrong region.
+    >
+    > * If you want to define custom [startup](https://cloud.google.com/compute/docs/startupscript) and [shutdown](https://cloud.google.com/compute/docs/shutdownscript) scripts, click **Edit metadata** link in the image settings.
+
+5. Click **Save** and go to the **Agents** tab. Navigate to your newly created image and click **Start** to invoke a new Google Cloud-based build agent. This screen also allows you to monitor and shut down currently running cloud agents.
 
 #### Preemptible instance
 
-If you are using preemptible instances you have to specify [shutdown script](https://cloud.google.com/compute/docs/instances/create-start-preemptible-instance#handle_preemption) to gracefully reschedule build from preempted VM on another build agent like that.
+If you are using preemptible instances you have to specify [shutdown script](https://cloud.google.com/compute/docs/instances/create-start-preemptible-instance#handle_preemption) to gracefully reschedule build from a preempted VM on another build agent like that.
 
 For Linix instances:
 ```json
