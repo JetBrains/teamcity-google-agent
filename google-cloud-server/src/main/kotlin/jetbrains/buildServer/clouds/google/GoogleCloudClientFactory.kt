@@ -62,6 +62,12 @@ class GoogleCloudClientFactory(cloudRegistrar: CloudRegistrar,
         return params.getParameter(parameter) ?: throw RuntimeException("$parameter must not be empty")
     }
 
+    override fun getTypeDescription(): String = """
+        Agents running in the Compute Engine service of Google Cloud. Supports advanced configurations, suitable for the majority of TeamCity projects.
+    """.trimIndent()
+
+    override fun getProfileIconUrl(): String = myPluginDescriptor.getPluginResourcesPath("icon.svg")
+
     override fun parseImageData(params: CloudClientParameters): Collection<GoogleCloudImageDetails> {
         if (!params.getParameter(CloudImageParameters.SOURCE_IMAGES_JSON).isNullOrEmpty()) {
             return GoogleUtils.parseImageData(GoogleCloudImageDetails::class.java, params)
