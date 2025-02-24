@@ -41,29 +41,11 @@
         <tr data-bind="css: {hidden: credentials().type() != '${cons.credentialsKey}' }">
             <th><label for="${cons.accessKey}">JSON private key: <l:star/></label></th>
             <td>
-                <div data-bind="visible: showAccessKey || !isValidCredentials()" style="display: none">
-                    <div>Edit JSON key:</div>
-                    <textarea name="prop:${cons.accessKey}" class="longField"
-                              rows="5" cols="49"
-                              data-bind="initializeValue: credentials().accessKey,
-                              textInput: credentials().accessKey, event: {
-                              dragover: function() { return false },
-                              dragenter: function() { dragEnterHandler(); },
-                              dragleave: function() { dragLeaveHandler(); },
-                              drop: function(data, event) { return dropHandler(event) } },
-                              css: { attentionComment: isDragOver }"><c:out
-                              value="${propertiesBean.properties[cons.accessKey]}"/></textarea>
-                    <span data-bind="css: {invisible: !validatingKey()}">
-                        <i class="icon-refresh icon-spin"></i>
-                    </span>
-                </div>
-                <a href="#" data-bind="click: function() { showAccessKey(true) }, visible: !showAccessKey()">Edit JSON key</a>
-                <span class="smallNote">Specify the JSON private key.</span>
                 <div data-bind="visible: hasFileReader">
                     <input type="file"
-                           data-bind="event: { change: function() { loadAccessKey($element.files[0]) } }"/>
+                           data-bind="event: { change: function() { loadAccessKey($element.files[0]); validatingKey(); } }"/>
                 </div>
-                <span class="error option-error" data-bind="validationMessage: credentials().accessKey"></span>
+                <span class="smallNote">Specify the JSON private key.</span>
             </td>
         </tr>
         <tr>
