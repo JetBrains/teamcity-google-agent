@@ -596,6 +596,7 @@ function GoogleImagesViewModel($, ko, dialog, config) {
         var reader = new FileReader();
         reader.onload = function (e) {
             self.credentials().accessKey(e.target.result);
+            document.getElementById("secure:accessKey").value = e.target.result;
         };
         reader.readAsText(file);
     };

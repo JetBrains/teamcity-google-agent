@@ -39,6 +39,7 @@
             </td>
         </tr>
         <tr data-bind="css: {hidden: credentials().type() != '${cons.credentialsKey}' }">
+            <props:passwordProperty name="${cons.accessKey}" style="display: none;"/>
             <th><label for="${cons.accessKey}">JSON private key: <l:star/></label></th>
             <td>
                 <div data-bind="visible: hasFileReader">
