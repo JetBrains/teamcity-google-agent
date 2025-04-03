@@ -68,7 +68,7 @@ public abstract class GoogleCloudClientBase<G extends AbstractCloudInstance<T>, 
   @Nullable
   private static String getInstanceName(@NotNull AgentDescription agent) {
     int major = ServerVersionHolder.getVersion().getDisplayVersionMajor();
-    int minor = ServerVersionHolder.getVersion().getDisplayVersionMajor();
+    int minor = ServerVersionHolder.getVersion().getDisplayVersionMinor();
     if (major > 2024 || major == 2024 && minor == 12) {
       // the getAvailableParameterValue method was added in 2024.12
       return agent.getAvailableParameterValue(GoogleAgentProperties.INSTANCE_NAME);
