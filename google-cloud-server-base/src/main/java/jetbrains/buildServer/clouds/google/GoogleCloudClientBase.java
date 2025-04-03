@@ -15,6 +15,7 @@ import jetbrains.buildServer.clouds.base.errors.TypedCloudErrorInfo;
 import jetbrains.buildServer.clouds.base.tasks.UpdateInstancesTask;
 import jetbrains.buildServer.serverSide.AgentDescription;
 import jetbrains.buildServer.util.StringUtil;
+import jetbrains.buildServer.version.ServerVersionHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,7 +50,7 @@ public abstract class GoogleCloudClientBase<G extends AbstractCloudInstance<T>, 
   @Nullable
   @Override
   public G findInstanceByAgent(@NotNull final AgentDescription agent) {
-    final String instanceName = agent.getConfigurationParameters().get(GoogleAgentProperties.INSTANCE_NAME);
+    String instanceName = getInstanceName(agent);
     if (instanceName == null) {
       return null;
     }
@@ -65,8 +66,20 @@ public abstract class GoogleCloudClientBase<G extends AbstractCloudInstance<T>, 
   }
 
   @Nullable
+  private static String getInstanceName(@NotNull AgentDescription agent) {
+    int major = ServerVersionHolder.getVersion().getDisplayVersionMajor();
+    int minor = ServerVersionHolder.getVersion().getDisplayVersionMinor();
+    if (major > 2024 || major == 2024 && minor == 12) {
+      // the getAvailableParameterValue method was added in 2024.12
+      return agent.getAvailableParameterValue(GoogleAgentProperties.INSTANCE_NAME);
+    }
+
+    return agent.getAvailableParameters().get(GoogleAgentProperties.INSTANCE_NAME);
+  }
+
+  @Nullable
   public String generateAgentName(@NotNull final AgentDescription agent) {
-    final String instanceName = agent.getConfigurationParameters().get(GoogleAgentProperties.INSTANCE_NAME);
+    final String instanceName = getInstanceName(agent);
     LOG.debug("Reported google instance name: " + instanceName);
     return instanceName;
   }
