@@ -49,7 +49,7 @@ public abstract class GoogleCloudClientBase<G extends AbstractCloudInstance<T>, 
   @Nullable
   @Override
   public G findInstanceByAgent(@NotNull final AgentDescription agent) {
-    final String instanceName = agent.getConfigurationParameters().get(GoogleAgentProperties.INSTANCE_NAME);
+    final String instanceName = agent.getAvailableParameterValue(GoogleAgentProperties.INSTANCE_NAME);
     if (instanceName == null) {
       return null;
     }
@@ -66,7 +66,7 @@ public abstract class GoogleCloudClientBase<G extends AbstractCloudInstance<T>, 
 
   @Nullable
   public String generateAgentName(@NotNull final AgentDescription agent) {
-    final String instanceName = agent.getConfigurationParameters().get(GoogleAgentProperties.INSTANCE_NAME);
+    final String instanceName = agent.getAvailableParameterValue(GoogleAgentProperties.INSTANCE_NAME);
     LOG.debug("Reported google instance name: " + instanceName);
     return instanceName;
   }

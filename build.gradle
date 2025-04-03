@@ -6,7 +6,7 @@ ext {
     def correctVersion = project.hasProperty('versionNumber') && property('versionNumber') ==~ /\d+\.\d+\.\d+.*/
     versionNumber = correctVersion ? property('versionNumber') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
     projectIds = ['group': 'teamcity-google-agent', 'version': versionNumber]
-    teamcityVersion = findProperty('teamcityVersion') ?: '2024.07'
+    teamcityVersion = findProperty('teamcityVersion') ?: '2024.12'
 }
 
 group = projectIds.group
