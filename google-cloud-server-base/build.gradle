@@ -3,12 +3,12 @@ plugins {
 }
 
 dependencies {
-    compile project(':google-cloud-common')
+    implementation project(':google-cloud-common')
 
     provided "org.jetbrains.teamcity:cloud-interface:$teamcityVersion"
     provided "org.jetbrains.teamcity:cloud-shared:$teamcityVersion"
     provided 'com.google.code.gson:gson:2.5'
-    testCompile 'org.testng:testng:6.8'
+    testImplementation 'org.testng:testng:6.8'
 }
 
 teamcity {

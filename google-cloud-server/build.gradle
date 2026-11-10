@@ -11,15 +11,6 @@ teamcity {
     }
 }
 
-import org.gradle.api.attributes.Attribute
-
-configurations.all {
-    // google-cloud-compute 1.x pulls Guava variants that Gradle 6.6.1 cannot disambiguate
-    attributes {
-        attribute(Attribute.of("org.gradle.jvm.environment", String), "standard-jvm")
-    }
-}
-
 dependencies {
     agent project(path: ':google-cloud-agent', configuration: 'plugin')
     server project(':google-cloud-common')
@@ -27,14 +18,14 @@ dependencies {
     server project(':google-cloud-server-base')
     implementation project(':google-cloud-server-base')
 
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
-    compile "com.google.cloud:google-cloud-compute:$google_compute_sdk"
-    compile "com.google.cloud:google-cloud-resourcemanager:$google_resourcemanager_sdk"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
+    implementation "com.google.cloud:google-cloud-compute:$google_compute_sdk"
+    implementation "com.google.cloud:google-cloud-resourcemanager:$google_resourcemanager_sdk"
     implementation("com.google.auth:google-auth-library-oauth2-http:1.13.0")
 
     provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
-    testCompile 'org.testng:testng:6.8'
+    testImplementation 'org.testng:testng:6.8'
 }
 
 serverPlugin.version = null
