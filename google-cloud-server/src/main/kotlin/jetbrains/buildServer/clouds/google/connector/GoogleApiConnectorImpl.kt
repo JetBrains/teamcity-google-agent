@@ -21,6 +21,9 @@ import jetbrains.buildServer.clouds.google.*
 import jetbrains.buildServer.clouds.google.utils.AlphaNumericStringComparator
 import jetbrains.buildServer.util.StringUtil
 import kotlinx.coroutines.*
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 class GoogleApiConnectorImpl : GoogleApiConnector {
 
@@ -500,23 +503,44 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     override fun <R : AbstractInstance?> fetchInstances(images: MutableCollection<GoogleCloudImage>)
             : MutableMap<GoogleCloudImage, MutableMap<String, R>> {
         val map = mutableMapOf<String, MutableList<Instance>>()
-        instanceClient.aggregatedListInstances(ProjectName.of(myProjectId))
-                .iterateAll()
-                .flatMap { it.instancesList ?: emptyList() }
-                .forEach {
-                    val metadata = it.metadata.itemsList?.associateBy(
-                            { items -> items.key },
-                            { items -> items.value })
-                            ?: emptyMap()
+        var request = AggregatedListInstancesHttpRequest.newBuilder()
+                .setProject(ProjectName.of(myProjectId).toString())
+                .build()
 
-                    if (metadata[GoogleConstants.TAG_SERVER] != myServerId) return@forEach
-                    if (metadata[GoogleConstants.TAG_PROFILE] != myProfileId) return@forEach
-                    if (metadata[GoogleConstants.TAG_DATA].isNullOrEmpty()) return@forEach
-                    metadata[GoogleConstants.TAG_SOURCE]?.let { sourceId ->
-                        val list = map.getOrPut(sourceId) { mutableListOf() }
-                        list.add(it)
+        while (true) {
+            val response = try {
+                instanceClient.aggregatedListInstancesCallable()
+                        .futureCall(request)
+                        .get(GOOGLE_API_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            } catch (e: TimeoutException) {
+                throw CloudException("$GOOGLE_API_TIMEOUT_SECONDS seconds timeout exceeded while listing instances in Google Cloud", e)
+            } catch (e: InterruptedException) {
+                Thread.currentThread().interrupt()
+                throw CloudException("Interrupted while listing instances in Google Cloud", e)
+            } catch (e: ExecutionException) {
+                throw e.cause ?: e
+            }
+
+            response.itemsMap?.values.orEmpty()
+                    .flatMap { it.instancesList ?: emptyList() }
+                    .forEach {
+                        val metadata = it.metadata.itemsList?.associateBy(
+                                { items -> items.key },
+                                { items -> items.value })
+                                ?: emptyMap()
+
+                        if (metadata[GoogleConstants.TAG_SERVER] != myServerId) return@forEach
+                        if (metadata[GoogleConstants.TAG_PROFILE] != myProfileId) return@forEach
+                        if (metadata[GoogleConstants.TAG_DATA].isNullOrEmpty()) return@forEach
+                        metadata[GoogleConstants.TAG_SOURCE]?.let { sourceId ->
+                            val list = map.getOrPut(sourceId) { mutableListOf() }
+                            list.add(it)
+                        }
                     }
-                }
+
+            if (response.nextPageToken.isNullOrEmpty()) break
+            request = request.toBuilder().setPageToken(response.nextPageToken).build()
+        }
 
         val result = hashMapOf<GoogleCloudImage, MutableMap<String, R>>()
 
@@ -638,6 +662,8 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
     companion object {
         private val LOG = Logger.getInstance(GoogleApiConnectorImpl::class.java.name)
+
+        private const val GOOGLE_API_TIMEOUT_SECONDS = 120L
 
         val REQUIRED_PERMISSIONS = listOf(
                 "compute.images.list",
