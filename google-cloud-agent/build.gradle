@@ -14,8 +14,8 @@ teamcity {
 dependencies {
     implementation project(':google-cloud-common')
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    implementation 'com.google.code.gson:gson:2.5'
-    implementation 'org.apache.httpcomponents:httpclient:4.3.4'
+    implementation 'com.google.code.gson:gson:2.14.0'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
     provided "org.jetbrains.teamcity:cloud-interface:$teamcityVersion"
     provided "org.jetbrains.teamcity:cloud-shared:$teamcityVersion"
     provided "org.jetbrains.teamcity.internal:agent:$teamcityVersion"

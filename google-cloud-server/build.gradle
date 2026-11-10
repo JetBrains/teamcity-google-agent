@@ -22,7 +22,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
     implementation "com.google.cloud:google-cloud-compute:$google_compute_sdk"
     implementation "com.google.cloud:google-cloud-resourcemanager:$google_resourcemanager_sdk"
-    implementation("com.google.auth:google-auth-library-oauth2-http:1.13.0")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.57.0")
 
     provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
     testImplementation 'org.testng:testng:6.8'
