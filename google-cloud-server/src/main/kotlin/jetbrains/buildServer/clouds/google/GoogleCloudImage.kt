@@ -112,7 +112,7 @@ DisposableHandle, CoroutineScope {
     }
 
     private fun processOperationResult(instance: GoogleCloudInstance, operation: Operation) {
-        instance.startOperationId = operation.id
+        instance.startOperationId = operation.id.toString()
         instance.status = InstanceStatus.RUNNING
     }
 
