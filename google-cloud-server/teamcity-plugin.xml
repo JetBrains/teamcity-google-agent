@@ -13,6 +13,6 @@
       <url>http://www.jetbrains.com/</url>
     </vendor>
   </info>
-  <requirements min-build="40000" />
+  <requirements min-build="174331" />
   <deployment use-separate-classloader="true" />
 </teamcity-plugin>

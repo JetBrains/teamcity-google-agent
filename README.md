@@ -8,7 +8,7 @@ This plugin allows TeamCity to scale the pool of build agents using cloud instan
 
 ## Compatibility
 
-The plugin is compatible with TeamCity 10.0.x and newer.
+The plugin is compatible with TeamCity 2024.12 and newer.
 
 ## Installation
 

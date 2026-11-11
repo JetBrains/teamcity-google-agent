@@ -3,12 +3,12 @@ plugins {
 }
 
 dependencies {
-    compile project(':google-cloud-common')
+    implementation project(':google-cloud-common')
 
     provided "org.jetbrains.teamcity:cloud-interface:$teamcityVersion"
     provided "org.jetbrains.teamcity:cloud-shared:$teamcityVersion"
-    provided 'com.google.code.gson:gson:2.5'
-    testCompile 'org.testng:testng:6.8'
+    provided 'com.google.code.gson:gson:2.14.0'
+    testImplementation 'org.testng:testng:6.8'
 }
 
 teamcity {
@@ -16,6 +16,6 @@ teamcity {
 }
 
 compileJava {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }

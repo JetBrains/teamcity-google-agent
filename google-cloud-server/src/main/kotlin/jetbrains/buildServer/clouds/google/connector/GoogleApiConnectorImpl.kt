@@ -21,6 +21,7 @@ import jetbrains.buildServer.clouds.google.*
 import jetbrains.buildServer.clouds.google.utils.AlphaNumericStringComparator
 import jetbrains.buildServer.util.StringUtil
 import kotlinx.coroutines.*
+import java.time.Duration
 
 class GoogleApiConnectorImpl : GoogleApiConnector {
 
@@ -108,8 +109,8 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
         @Suppress("IMPLICIT_CAST_TO_ANY")
         val instanceBootImage = when(details.imageType) {
-            GoogleCloudImageType.Image -> ProjectGlobalImageName.format(details.sourceImage, instanceBootImageProject)
-            GoogleCloudImageType.ImageFamily -> ProjectGlobalImageFamilyName.format(details.sourceImageFamily, instanceBootImageProject)
+            GoogleCloudImageType.Image -> "projects/$instanceBootImageProject/global/images/${details.sourceImage}"
+            GoogleCloudImageType.ImageFamily -> "projects/$instanceBootImageProject/global/imageFamilies/${details.sourceImageFamily}"
             else -> LOG.warn("Invalid imageType: ${details.imageType}")
         }
 
@@ -117,7 +118,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
         val networkId = details.network ?: "default"
         val network = findNetwork(networkId)
-        val networkName = network?.selfLink ?: ProjectGlobalNetworkName.format(networkId, myProjectId)
+        val networkName = network?.selfLink ?: "projects/$myProjectId/global/networks/$networkId"
 
         val networkInterface = NetworkInterface.newBuilder()
             .setName(networkName)
@@ -127,7 +128,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 } else if (!details.subnet.isNullOrBlank()) {
                     val region = zone.substring(0, zone.length - 2)
                     subnetwork = network?.subnetworksList?.find{ it.endsWith(details.subnet)} ?:
-                            ProjectRegionSubnetworkName.format(myProjectId, region, details.subnet)
+                            "projects/$myProjectId/regions/$region/subnetworks/${details.subnet}"
                 }
 
                 if (details.externalIP) {
@@ -142,18 +143,18 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
             .build()
 
         val instanceInfo = getInstanceBuilder(instance)
-                .setMachineType(ProjectZoneMachineTypeName.format(machineType, myProjectId, zone))
+                .setMachineType("projects/$myProjectId/zones/$zone/machineTypes/$machineType")
                 .addDisks(AttachedDisk.newBuilder()
                         .setInitializeParams(AttachedDiskInitializeParams.newBuilder()
                                 .setSourceImage(instanceBootImage as String?)
                                 .apply {
                                     if (!details.diskType.isNullOrBlank()) {
-                                        diskType = ProjectZoneDiskTypeName.format(details.diskType, myProjectId, zone)
+                                        diskType = "projects/$myProjectId/zones/$zone/diskTypes/${details.diskType}"
                                     }
                                 }
                                 .apply {
                                     if (!details.diskSizeGb.isNullOrBlank()) {
-                                        diskSizeGb = details.diskSizeGb
+                                        diskSizeGb = details.diskSizeGb.toLong()
                                     }
                                 }
                                 .build())
@@ -175,8 +176,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 }
                 .build()
 
-        instanceClient.insertInstanceCallable().futureCall(InsertInstanceHttpRequest.newBuilder()
-                .setZone(ProjectZoneName.format(myProjectId, zone))
+        instanceClient.insertCallable().futureCall(InsertInstanceRequest.newBuilder()
+                .setProject(myProjectId)
+                .setZone(zone)
                 .setInstanceResource(instanceInfo)
                 .build())
                 .await()
@@ -207,9 +209,10 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
                 .build()
 
         LOG.info("Creating instance from Instance Template: ${instanceTemplateBuilder.getName()}")
-        instanceClient.insertInstanceCallable().futureCall(InsertInstanceHttpRequest.newBuilder()
-                .setSourceInstanceTemplate(ProjectGlobalInstanceTemplateName.format(details.instanceTemplate, myProjectId))
-                .setZone(ProjectZoneName.format(myProjectId, zone))
+        instanceClient.insertCallable().futureCall(InsertInstanceRequest.newBuilder()
+                .setSourceInstanceTemplate("projects/$myProjectId/global/instanceTemplates/${details.instanceTemplate}")
+                .setProject(myProjectId)
+                .setZone(zone)
                 .setInstanceResource(instanceInfo)
                 .build())
                 .await()
@@ -221,7 +224,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
             .split("/")
             .slice(1..5 step 2)
 
-        return ProjectRegionSubnetworkName.format(projectID, region, subnet)
+        return "projects/$projectID/regions/$region/subnetworks/$subnet"
     }
 
     private fun getInstanceBuilder(instance: GoogleCloudInstance, fromTemplate: Boolean): Instance.Builder {
@@ -246,13 +249,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     private fun getInstanceTemplate(instance: GoogleCloudInstance): InstanceTemplate {
         LOG.info("getInstanceTemplate template name: ${instance.image.imageDetails.instanceTemplate}")
         LOG.info("getInstanceTemplate GCP project ID: $myProjectId")
-        val instanceTemplateName = ProjectGlobalInstanceTemplateName.format(
-                instance.image.imageDetails.instanceTemplate,
-                myProjectId
-        )
 
-        LOG.info("GCP get Instance Template: $instanceTemplateName")
-        return instanceTemplateClient.getInstanceTemplate(instanceTemplateName.toString())
+        LOG.info("GCP get Instance Template: projects/$myProjectId/global/instanceTemplates/${instance.image.imageDetails.instanceTemplate}")
+        return instanceTemplateClient.get(myProjectId, instance.image.imageDetails.instanceTemplate)
     }
 
     private fun getMetadata(metadata: Map<String, String?>): Metadata? {
@@ -266,43 +265,47 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     override suspend fun startVm(instance: GoogleCloudInstance) = coroutineScope {
-        instanceClient.startInstanceCallable()
-                .futureCall(StartInstanceHttpRequest.newBuilder()
-                        .setInstance(getInstance(instance))
+        instanceClient.startCallable()
+                .futureCall(StartInstanceRequest.newBuilder()
+                        .setProject(myProjectId)
+                        .setZone(instance.zone)
+                        .setInstance(instance.id)
                         .build())
                 .await()
         Unit
     }
 
     override suspend fun restartVm(instance: GoogleCloudInstance) = coroutineScope {
-        instanceClient.resetInstanceCallable()
-                .futureCall(ResetInstanceHttpRequest.newBuilder()
-                        .setInstance(getInstance(instance))
+        instanceClient.resetCallable()
+                .futureCall(ResetInstanceRequest.newBuilder()
+                        .setProject(myProjectId)
+                        .setZone(instance.zone)
+                        .setInstance(instance.id)
                         .build())
                 .await()
         Unit
     }
 
     override suspend fun stopVm(instance: GoogleCloudInstance) = coroutineScope {
-        instanceClient.stopInstanceCallable()
-                .futureCall(StopInstanceHttpRequest.newBuilder()
-                        .setInstance(getInstance(instance))
+        instanceClient.stopCallable()
+                .futureCall(StopInstanceRequest.newBuilder()
+                        .setProject(myProjectId)
+                        .setZone(instance.zone)
+                        .setInstance(instance.id)
                         .build())
                 .await()
         Unit
     }
 
     override suspend fun deleteVm(instance: GoogleCloudInstance) = coroutineScope {
-        instanceClient.deleteInstanceCallable()
-                .futureCall(DeleteInstanceHttpRequest.newBuilder()
-                        .setInstance(getInstance(instance))
+        instanceClient.deleteCallable()
+                .futureCall(DeleteInstanceRequest.newBuilder()
+                        .setProject(myProjectId)
+                        .setZone(instance.zone)
+                        .setInstance(instance.id)
                         .build())
                 .await()
         Unit
-    }
-
-    private fun getInstance(instance: GoogleCloudInstance): String {
-        return ProjectZoneInstanceName.format(instance.id, myProjectId, instance.zone)
     }
 
     override fun checkImage(image: GoogleCloudImage) = runBlocking {
@@ -319,7 +322,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
         val res = getOperation(instance.startOperationId!!, myProjectId!!, instance.zone) ?: return@runBlocking emptyArray()
 
-        if (res.httpErrorMessage != null || res.httpErrorStatusCode != null) {
+        if (res.httpErrorMessage != null || res.httpErrorStatusCode > 0) {
             res.error?.errorsList?.map { e ->
                 TypedCloudErrorInfo(
                     res.operationType,
@@ -335,9 +338,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
     override suspend fun getImages(project: String?) = coroutineScope {
         val projectName = if (project.isNullOrBlank()) myProjectId else project
-        val images = imageClient.listImagesPagedCallable()
-                .futureCall(ListImagesHttpRequest.newBuilder()
-                        .setProject(ProjectName.format(projectName))
+        val images = imageClient.listPagedCallable()
+                .futureCall(ListImagesRequest.newBuilder()
+                        .setProject(projectName)
                         .build())
                 .await()
 
@@ -349,9 +352,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
     override suspend fun getImageFamilies(project: String?) = coroutineScope {
         val projectName = if (project.isNullOrBlank()) myProjectId else project
-        val images = imageClient.listImagesPagedCallable()
-                .futureCall(ListImagesHttpRequest.newBuilder()
-                        .setProject(ProjectName.format(projectName))
+        val images = imageClient.listPagedCallable()
+                .futureCall(ListImagesRequest.newBuilder()
+                        .setProject(projectName)
                         .build())
                 .await()
 
@@ -363,9 +366,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     override suspend fun getTemplates() = coroutineScope {
-        val templates = instanceTemplateClient.listInstanceTemplatesPagedCallable()
-                .futureCall(ListInstanceTemplatesHttpRequest.newBuilder()
-                        .setProject(ProjectName.format(myProjectId))
+        val templates = instanceTemplateClient.listPagedCallable()
+                .futureCall(ListInstanceTemplatesRequest.newBuilder()
+                        .setProject(myProjectId)
                         .build())
                 .await()
 
@@ -376,15 +379,15 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     override suspend fun getZones() = coroutineScope {
-        val zones = zoneClient.listZonesPagedCallable()
-                .futureCall(ListZonesHttpRequest.newBuilder()
-                        .setProject(ProjectName.format(myProjectId))
+        val zones = zoneClient.listPagedCallable()
+                .futureCall(ListZonesRequest.newBuilder()
+                        .setProject(myProjectId)
                         .build())
                 .await()
 
         zones.iterateAll()
                 .map { zone ->
-                    val region = ProjectRegionName.parse(zone.region).region
+                    val region = zone.region.substringAfterLast('/')
                     zone.name to listOf(formattedName(zone.name, zone.description), region)
                 }
                 .sortedWith(compareBy(comparator) { it.second.first() })
@@ -392,9 +395,10 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     override suspend fun getMachineTypes(zone: String) = coroutineScope {
-        val machineTypes = machineTypeClient.listMachineTypesPagedCallable()
-                .futureCall(ListMachineTypesHttpRequest.newBuilder()
-                        .setZone(ProjectZoneName.format(myProjectId, zone))
+        val machineTypes = machineTypeClient.listPagedCallable()
+                .futureCall(ListMachineTypesRequest.newBuilder()
+                        .setProject(myProjectId)
+                        .setZone(zone)
                         .build())
                 .await()
 
@@ -414,9 +418,9 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     private suspend fun getVpcHostProjects(): Project? {
-        return projectClient.xpnHostProjectCallable.futureCall(
-            GetXpnHostProjectHttpRequest.newBuilder()
-                .setProject(ProjectName.format(myProjectId))
+        return projectClient.getXpnHostCallable().futureCall(
+            GetXpnHostProjectRequest.newBuilder()
+                .setProject(myProjectId)
                 .build()
         ).await()
     }
@@ -430,10 +434,10 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
     private suspend fun getNetworksForProject(project: String): List<Network> {
         try {
-            val networks = networkClient.listNetworksPagedCallable()
+            val networks = networkClient.listPagedCallable()
                 .futureCall(
-                    ListNetworksHttpRequest.newBuilder()
-                        .setProject(ProjectName.format(project))
+                    ListNetworksRequest.newBuilder()
+                        .setProject(project)
                         .build()
                 )
                 .await()
@@ -453,7 +457,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     override suspend fun getSubnets(region: String) = coroutineScope {
         withVpcProjects { getSubnetsForProject(it, region) }
             .map { subNetwork ->
-                val network = ProjectGlobalNetworkName.parse(subNetwork.network).network
+                val network = subNetwork.network.substringAfterLast('/')
                 subNetwork.name to listOf(formattedName(subNetwork.name, subNetwork.description), network)
             }
             .sortedWith(compareBy(comparator) { it.second.first() })
@@ -462,10 +466,11 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
     private suspend fun getSubnetsForProject(project: String?, region: String): List<Subnetwork> {
         try {
-            val subNetworks = subNetworkClient.listSubnetworksPagedCallable()
+            val subNetworks = subNetworkClient.listPagedCallable()
                 .futureCall(
-                    ListSubnetworksHttpRequest.newBuilder()
-                        .setRegion(ProjectRegionName.format(project, region))
+                    ListSubnetworksRequest.newBuilder()
+                        .setProject(project)
+                        .setRegion(region)
                         .build()
                 ).await()
 
@@ -480,9 +485,10 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     override suspend fun getDiskTypes(zone: String) = coroutineScope {
-        val diskTypes = diskTypeClient.listDiskTypesPagedCallable()
-                .futureCall(ListDiskTypesHttpRequest.newBuilder()
-                        .setZone(ProjectZoneName.format(myProjectId, zone))
+        val diskTypes = diskTypeClient.listPagedCallable()
+                .futureCall(ListDiskTypesRequest.newBuilder()
+                        .setProject(myProjectId)
+                        .setZone(zone)
                         .build())
                 .await()
 
@@ -500,9 +506,11 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     override fun <R : AbstractInstance?> fetchInstances(images: MutableCollection<GoogleCloudImage>)
             : MutableMap<GoogleCloudImage, MutableMap<String, R>> {
         val map = mutableMapOf<String, MutableList<Instance>>()
-        instanceClient.aggregatedListInstances(ProjectName.of(myProjectId))
+        instanceClient.aggregatedList(AggregatedListInstancesRequest.newBuilder()
+                        .setProject(myProjectId)
+                        .build())
                 .iterateAll()
-                .flatMap { it.instancesList ?: emptyList() }
+                .flatMap { it.value.instancesList ?: emptyList() }
                 .forEach {
                     val metadata = it.metadata.itemsList?.associateBy(
                             { items -> items.key },
@@ -525,7 +533,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
             map[image.imageDetails.sourceId]?.let { foundInstances ->
                 foundInstances.forEach {
                     val name = it.name
-                    val zone = ProjectZoneName.parse(it.zone).zone
+                    val zone = it.zone.substringAfterLast('/')
                     @Suppress("UNCHECKED_CAST")
                     instances[name] = GoogleInstance(it, zone) as R
 
@@ -556,7 +564,7 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
     }
 
     private fun getOperation(operationId: String, projectId: String, zone: String): Operation? {
-        return operationsClient.getZoneOperation(ProjectZoneOperationName.of(operationId, projectId, zone))
+        return operationsClient.get(projectId, zone, operationId)
     }
 
     fun setServerId(serverId: String?) {
@@ -567,63 +575,71 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
         myProfileId = profileId
     }
 
-    private val operationsClient: ZoneOperationClient by lazy {
-        ZoneOperationClient.create(ZoneOperationSettings.newBuilder()
-            .setCredentialsProvider(getCredentialsProvider { ZoneSettings.getDefaultServiceScopes() })
+    private val operationsClient: ZoneOperationsClient by lazy {
+        ZoneOperationsClient.create(ZoneOperationsSettings.newBuilder()
+            .setCredentialsProvider(getCredentialsProvider { ZoneOperationsSettings.getDefaultServiceScopes() })
             .build())
     }
 
-    private val projectClient: ProjectClient by lazy {
-        ProjectClient.create(ProjectSettings.newBuilder()
-                .setCredentialsProvider(getCredentialsProvider { ProjectSettings.getDefaultServiceScopes() })
+    private val projectClient: ProjectsClient by lazy {
+        ProjectsClient.create(ProjectsSettings.newBuilder()
+                .setCredentialsProvider(getCredentialsProvider { ProjectsSettings.getDefaultServiceScopes() })
                 .build())
     }
 
-    private val instanceClient: InstanceClient by lazy {
-        InstanceClient.create(InstanceSettings.newBuilder()
-                .setCredentialsProvider(getCredentialsProvider { InstanceSettings.getDefaultServiceScopes() })
+    private val instanceClient: InstancesClient by lazy {
+        InstancesClient.create(InstancesSettings.newBuilder()
+                .setCredentialsProvider(getCredentialsProvider { InstancesSettings.getDefaultServiceScopes() })
+                .apply {
+                    // Prevents instances.aggregatedList from hanging server startup indefinitely,
+                    // see https://youtrack.jetbrains.com/issue/TW-83415
+                    aggregatedListSettings().retrySettings = aggregatedListSettings().retrySettings
+                            .toBuilder()
+                            .setTotalTimeoutDuration(Duration.ofSeconds(GOOGLE_API_TIMEOUT_SECONDS))
+                            .build()
+                }
                 .build())
     }
 
-    private val imageClient: ImageClient by lazy {
-        ImageClient.create(ImageSettings.newBuilder()
-                .setCredentialsProvider(getCredentialsProvider { ImageSettings.getDefaultServiceScopes() })
+    private val imageClient: ImagesClient by lazy {
+        ImagesClient.create(ImagesSettings.newBuilder()
+                .setCredentialsProvider(getCredentialsProvider { ImagesSettings.getDefaultServiceScopes() })
                 .build())
     }
 
-    private val zoneClient: ZoneClient by lazy {
-        ZoneClient.create(ZoneSettings.newBuilder()
-                .setCredentialsProvider(getCredentialsProvider { ZoneSettings.getDefaultServiceScopes() })
+    private val zoneClient: ZonesClient by lazy {
+        ZonesClient.create(ZonesSettings.newBuilder()
+                .setCredentialsProvider(getCredentialsProvider { ZonesSettings.getDefaultServiceScopes() })
                 .build())
     }
 
-    private val machineTypeClient: MachineTypeClient by lazy {
-        MachineTypeClient.create(MachineTypeSettings.newBuilder()
-                .setCredentialsProvider(getCredentialsProvider { MachineTypeSettings.getDefaultServiceScopes() })
+    private val machineTypeClient: MachineTypesClient by lazy {
+        MachineTypesClient.create(MachineTypesSettings.newBuilder()
+                .setCredentialsProvider(getCredentialsProvider { MachineTypesSettings.getDefaultServiceScopes() })
                 .build())
     }
 
-    private val networkClient: NetworkClient by lazy {
-        NetworkClient.create(NetworkSettings.newBuilder()
-                .setCredentialsProvider(getCredentialsProvider { NetworkSettings.getDefaultServiceScopes() })
+    private val networkClient: NetworksClient by lazy {
+        NetworksClient.create(NetworksSettings.newBuilder()
+                .setCredentialsProvider(getCredentialsProvider { NetworksSettings.getDefaultServiceScopes() })
                 .build())
     }
 
-    private val subNetworkClient: SubnetworkClient by lazy {
-        SubnetworkClient.create(SubnetworkSettings.newBuilder()
-                .setCredentialsProvider(getCredentialsProvider { SubnetworkSettings.getDefaultServiceScopes() })
+    private val subNetworkClient: SubnetworksClient by lazy {
+        SubnetworksClient.create(SubnetworksSettings.newBuilder()
+                .setCredentialsProvider(getCredentialsProvider { SubnetworksSettings.getDefaultServiceScopes() })
                 .build())
     }
 
-    private val diskTypeClient: DiskTypeClient by lazy {
-        DiskTypeClient.create(DiskTypeSettings.newBuilder()
-                .setCredentialsProvider(getCredentialsProvider { DiskTypeSettings.getDefaultServiceScopes() })
+    private val diskTypeClient: DiskTypesClient by lazy {
+        DiskTypesClient.create(DiskTypesSettings.newBuilder()
+                .setCredentialsProvider(getCredentialsProvider { DiskTypesSettings.getDefaultServiceScopes() })
                 .build())
     }
 
-    private val instanceTemplateClient: InstanceTemplateClient by lazy {
-        InstanceTemplateClient.create(InstanceTemplateSettings.newBuilder()
-                .setCredentialsProvider(getCredentialsProvider { InstanceTemplateSettings.getDefaultServiceScopes() })
+    private val instanceTemplateClient: InstanceTemplatesClient by lazy {
+        InstanceTemplatesClient.create(InstanceTemplatesSettings.newBuilder()
+                .setCredentialsProvider(getCredentialsProvider { InstanceTemplatesSettings.getDefaultServiceScopes() })
                 .build())
     }
 
@@ -638,6 +654,8 @@ class GoogleApiConnectorImpl : GoogleApiConnector {
 
     companion object {
         private val LOG = Logger.getInstance(GoogleApiConnectorImpl::class.java.name)
+
+        private const val GOOGLE_API_TIMEOUT_SECONDS = 120L
 
         val REQUIRED_PERMISSIONS = listOf(
                 "compute.images.list",
